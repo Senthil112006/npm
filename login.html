@@ -3,48 +3,325 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#ffffff">
-  <title>Admin login | PSM InternHub</title>
+  <meta name="theme-color" content="#7c3aed">
+  <title>Admin Login | PSM InternHub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    :root { color-scheme: light; font-family: "Segoe UI", Arial, sans-serif; color: #1e1b4b; background: #ffffff; }
+    :root {
+      --ink: #1e1b4b;
+      --moss: #7c3aed;
+      --moss-dark: #6d28d9;
+      --leaf: #ede9fe;
+      --line: #e9d5ff;
+      --muted: #7c749b;
+      --bg: linear-gradient(135deg, #f5f3ff 0%, #ffffff 50%, #ede9fe 100%);
+    }
     * { box-sizing: border-box; }
-    body { display: grid; min-height: 100vh; margin: 0; place-items: center; padding: 24px; background: linear-gradient(135deg, #f5f3ff 0%, #ffffff 50%, #ede9fe 100%); }
-    main { width: min(100%, 400px); border: 1px solid #e9d5ff; border-radius: 16px; background: white; padding: 32px; box-shadow: 0 18px 48px rgba(124, 58, 237, 0.08); }
-    .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 30px; }
-    .mark { display: grid; width: 42px; height: 42px; place-items: center; border-radius: 12px; background: transparent; color: white; font-size: 12px; font-weight: 800; }
-    .brand-name { font-size: 17px; font-weight: 800; letter-spacing: -.04em; }
-    .brand-name span { color: #7c3aed; }
-    .brand-subtitle { margin-top: 3px; color: #7c749b; font-size: 9px; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; }
-    .eyebrow { color: #7c3aed; font-size: 10px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
-    h1 { margin: 8px 0 6px; font-size: 27px; letter-spacing: -.04em; color: #1e1b4b; }
-    .intro { margin: 0 0 24px; color: #7c749b; font-size: 13px; line-height: 1.6; }
-    label { display: block; margin: 16px 0 7px; color: #2e1065; font-size: 12px; font-weight: 700; }
-    input { width: 100%; border: 1px solid #ddd6fe; border-radius: 8px; padding: 11px 12px; font: inherit; font-size: 13px; color: #1e1b4b; }
-    input:focus { border-color: #7c3aed; outline: 3px solid rgba(124, 58, 237, 0.15); }
-    button { width: 100%; margin-top: 22px; border: 0; border-radius: 8px; background: #7c3aed; padding: 12px; color: white; cursor: pointer; font: inherit; font-size: 12px; font-weight: 800; }
-    button:hover { background: #6d28d9; }
-    .error { margin: 16px 0 0; border-radius: 8px; background: #fff1f0; padding: 10px 12px; color: #a12d27; font-size: 12px; }
-    .footer { margin-top: 24px; color: #7c749b; font-size: 10px; text-align: center; }
+    body {
+      display: grid;
+      min-height: 100vh;
+      margin: 0;
+      place-items: center;
+      padding: 24px;
+      background: var(--bg);
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--ink);
+    }
+    main {
+      width: min(100%, 410px);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: #ffffff;
+      padding: 36px 32px;
+      box-shadow: 0 20px 48px -8px rgba(124, 58, 237, 0.12), 0 4px 12px -2px rgba(124, 58, 237, 0.04);
+      animation: enter 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes enter {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .mark {
+      width: 44px;
+      height: 44px;
+      object-fit: contain;
+      border-radius: 12px;
+    }
+    .brand-name {
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+    }
+    .brand-name span { color: var(--moss); }
+    .brand-subtitle {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+    .eyebrow {
+      color: var(--moss);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 0 0 6px 0;
+    }
+    h1 {
+      margin: 0 0 8px 0;
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--ink);
+    }
+    .intro {
+      margin: 0 0 24px 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .field-group {
+      margin-bottom: 18px;
+    }
+    label {
+      display: block;
+      margin-bottom: 7px;
+      color: #2e1065;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    input {
+      width: 100%;
+      border: 1px solid #ddd6fe;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--ink);
+      background: #faf8ff;
+      transition: all 0.18s ease;
+      outline: none;
+    }
+    input:focus {
+      background: #ffffff;
+      border-color: var(--moss);
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+    }
+    .toggle-pwd {
+      position: absolute;
+      right: 10px;
+      background: transparent;
+      border: none;
+      padding: 6px;
+      cursor: pointer;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      transition: color 0.15s;
+    }
+    .toggle-pwd:hover {
+      color: var(--ink);
+      background: #ede9fe;
+    }
+    .toggle-pwd svg {
+      width: 18px;
+      height: 18px;
+    }
+    button.submit-btn {
+      width: 100%;
+      margin-top: 24px;
+      border: none;
+      border-radius: 10px;
+      background: var(--moss);
+      padding: 13px;
+      color: #ffffff;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.25);
+    }
+    button.submit-btn:hover:not(:disabled) {
+      background: var(--moss-dark);
+      box-shadow: 0 6px 18px rgba(124, 58, 237, 0.35);
+      transform: translateY(-1px);
+    }
+    button.submit-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      border-top-color: #ffffff;
+      border-radius: 50%;
+      animation: spin 0.65s linear infinite;
+      display: none;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    button.submit-btn.loading .spinner {
+      display: inline-block;
+    }
+    .error {
+      margin-top: 18px;
+      border-radius: 10px;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      padding: 11px 14px;
+      color: #b91c1c;
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .footer {
+      margin-top: 28px;
+      color: var(--muted);
+      font-size: 11px;
+      text-align: center;
+      border-top: 1px solid #f3e8ff;
+      padding-top: 18px;
+    }
   </style>
 </head>
 <body>
   <main>
     <div class="brand">
-      <img src="/assets/logo.png" onerror="if(!this.src.endsWith('assets/logo.png'))this.src='assets/logo.png'" alt="PSM logo" class="mark" style="background:transparent; padding:0; object-fit:contain;">
-      <div><div class="brand-name">Intern<span>Hub</span></div><div class="brand-subtitle">Problem Solving Minds</div></div>
+      <img src="/assets/logo.png" onerror="if(!this.src.endsWith('assets/logo.png'))this.src='assets/logo.png'" alt="PSM Logo" class="mark">
+      <div>
+        <div class="brand-name">Intern<span>Hub</span></div>
+        <div class="brand-subtitle">Problem Solving Minds</div>
+      </div>
     </div>
-    <p class="eyebrow">Administrator access</p>
+
+    <p class="eyebrow">Administrative Portal</p>
     <h1>Welcome back</h1>
-    <p class="intro">Sign in to manage intern records, portfolios, and evaluations.</p>
-    <form action="/login" method="post">
-      <label for="username">Username</label>
-      <input id="username" name="username" type="text" autocomplete="username" placeholder="admin@psm" maxlength="254" required autofocus>
-      <label for="password">Password</label>
-      <input id="password" name="password" type="password" autocomplete="current-password" placeholder="••••••••" maxlength="256" required>
-      <button type="submit">Sign in</button>
+    <p class="intro">Sign in to manage intern records, portfolios, evaluations, and certifications.</p>
+
+    <form id="loginForm" action="/login" method="post" novalidate onsubmit="handleSubmit(event)">
+      <div class="field-group">
+        <label for="username">Administrator Username / Email</label>
+        <div class="input-wrapper">
+          <input
+            id="username"
+            name="username"
+            type="text"
+            autocomplete="username"
+            placeholder="admin@psm"
+            maxlength="254"
+            required
+            autofocus
+          >
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label for="password">Password</label>
+        <div class="input-wrapper">
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            placeholder="••••••••••••"
+            maxlength="256"
+            required
+          >
+          <button
+            type="button"
+            id="togglePassword"
+            class="toggle-pwd"
+            aria-label="Toggle password visibility"
+            onclick="togglePasswordVisibility()"
+          >
+            <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+            <svg id="eyeOffIcon" style="display:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+              <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+              <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+              <line x1="2" y1="2" x2="22" y2="22"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <button id="submitBtn" type="submit" class="submit-btn">
+        <span class="spinner"></span>
+        <span id="btnText">Sign In to Dashboard</span>
+      </button>
+
       <!--LOGIN_ERROR-->
     </form>
-    <p class="footer">© 2026 Problem Solving Minds · InternHub</p>
+
+    <div class="footer">
+      © 2026 Problem Solving Minds · InternHub
+    </div>
   </main>
+
+  <script>
+    function togglePasswordVisibility() {
+      const pwd = document.getElementById('password');
+      const eye = document.getElementById('eyeIcon');
+      const eyeOff = document.getElementById('eyeOffIcon');
+      if (pwd.type === 'password') {
+        pwd.type = 'text';
+        eye.style.display = 'none';
+        eyeOff.style.display = 'block';
+      } else {
+        pwd.type = 'password';
+        eye.style.display = 'block';
+        eyeOff.style.display = 'none';
+      }
+    }
+
+    function handleSubmit(event) {
+      const usernameInput = document.getElementById('username');
+      const passwordInput = document.getElementById('password');
+      const submitBtn = document.getElementById('submitBtn');
+      const btnText = document.getElementById('btnText');
+
+      if (!usernameInput.value.trim() || !passwordInput.value) {
+        event.preventDefault();
+        usernameInput.focus();
+        return;
+      }
+
+      // Prevent duplicate submissions
+      submitBtn.disabled = true;
+      submitBtn.classList.add('loading');
+      btnText.textContent = 'Authenticating...';
+    }
+  </script>
 </body>
 </html>

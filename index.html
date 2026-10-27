@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#ffffff">
-  <title>PSM InternHub | Problem Solving Minds</title>
+  <meta name="theme-color" content="#7c3aed">
+  <title>PSM InternHub | Administrator Portal</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;600&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
       theme: {
@@ -19,6 +19,7 @@
           colors: {
             ink: '#1e1b4b',
             moss: '#7c3aed',
+            mossDark: '#6d28d9',
             leaf: '#ede9fe',
             paper: '#ffffff',
             line: '#e9d5ff',
@@ -34,188 +35,604 @@
   </script>
   <style>
     :root { color-scheme: light; }
-    body { font-family: 'DM Sans', sans-serif; background: #ffffff; color: #1e1b4b; }
+    body { font-family: 'DM Sans', sans-serif; background: #ffffff; color: #1e1b4b; margin: 0; }
     .font-mono { font-family: 'DM Mono', monospace; }
-    .view-enter { animation: appear .24s ease-out both; }
-    @keyframes appear { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-    button, input { -webkit-tap-highlight-color: transparent; }
+    .view-enter { animation: appear .22s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    @keyframes appear { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    button, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+    
+    .nav-link { flex: 0 0 auto; border: 1px solid transparent; border-radius: 9px; padding: 8px 14px; color: #7c749b; font-weight: 600; transition: all .15s ease; }
+    .no-scrollbar { scrollbar-width: none; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .nav-link:hover { color: #1e1b4b; background: #f5f3ff; }
+    .nav-link.active { color: #7c3aed; border-color: #ddd6fe; background: #ede9fe; font-weight: 700; }
+    
+    .metric { min-width: 0; border: 1px solid #e9d5ff; border-radius: 12px; background: white; padding: 16px 14px; box-shadow: 0 2px 8px -2px rgba(124, 58, 237, 0.05); transition: transform .15s ease; }
+    .metric:hover { transform: translateY(-1px); }
+    .metric span { display: block; color: #7c749b; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    .metric strong { display: block; margin-top: 8px; font-size: 26px; font-weight: 800; line-height: 1; letter-spacing: -.03em; color: #1e1b4b; }
+    .metric small { display: block; margin-top: 6px; color: #7c749b; font-size: 10px; font-weight: 500; }
+    
+    .panel { min-width: 0; border: 1px solid #e9d5ff; border-radius: 14px; background: white; padding: 20px; box-shadow: 0 2px 8px -2px rgba(124, 58, 237, 0.04); }
+    .panel-icon { display: grid; height: 34px; width: 34px; place-items: center; border-radius: 10px; background: #ede9fe; color: #7c3aed; }
+    .panel-icon svg { height: 18px; width: 18px; }
+    
+    .field { border: 1px solid #ddd6fe; border-radius: 9px; background: white; padding: 8px 12px; color: #1e1b4b; font-size: 12px; outline: none; transition: all .15s; }
+    .field:focus { border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15); }
+    
+    .action-button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; border-radius: 9px; background: #7c3aed; padding: 9px 14px; color: white; font-size: 12px; font-weight: 700; transition: background .15s; border: none; cursor: pointer; }
+    .action-button:hover { background: #6d28d9; }
+    
+    .cancel-button { border-radius: 9px; padding: 9px 14px; color: #5b4a78; font-size: 12px; font-weight: 700; background: transparent; cursor: pointer; border: 1px solid transparent; }
+    .cancel-button:hover { background: #f5f3ff; color: #1e1b4b; border-color: #e9d5ff; }
+    
+    .score-field { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; color: #2e1065; font-size: 12px; font-weight: 600; }
+    .score-field span { color: #7c749b; font-family: 'DM Mono', monospace; font-size: 11px; }
+    .score-field input { grid-column: 1 / -1; width: 100%; border: 1px solid #ddd6fe; border-radius: 8px; background: white; padding: 9px 11px; color: #1e1b4b; outline: none; font-size: 13px; }
+    .score-field input:focus { border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15); }
+    
+    .edit-dialog::backdrop { background: rgb(30 27 75 / 45%); backdrop-filter: blur(2px); }
+    .edit-field { display: grid; gap: 5px; color: #2e1065; font-size: 12px; font-weight: 600; }
+    .edit-field input, .edit-field select, .edit-field textarea { width: 100%; border: 1px solid #ddd6fe; border-radius: 8px; background: white; padding: 9px 11px; color: #1e1b4b; font: 400 12px 'DM Sans', sans-serif; outline: none; }
+    .edit-field input:focus, .edit-field select:focus, .edit-field textarea:focus { border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15); }
+    .edit-field input[readonly] { background: #faf8ff; color: #7c749b; cursor: default; }
+    
+    .icon-button { display: grid; height: 32px; width: 32px; place-items: center; border-radius: 8px; color: #7c749b; border: none; background: transparent; cursor: pointer; }
+    .icon-button:hover { background: #f5f3ff; color: #1e1b4b; }
+
     @media print {
-      body { background: white !important; }
-      body * { visibility: hidden; }
-      #idCard, #idCard * { visibility: visible; }
-      #idCard { position: absolute; inset: 0; margin: 0; box-shadow: none !important; }
-      .no-print { display: none !important; }
+      body { background: white !important; color: black !important; }
+      header, footer, nav, .no-print, dialog { display: none !important; }
+      main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
+      #view-dashboard, #view-students, #view-public-portfolio, #view-evaluator { display: none !important; }
+      #view-idcard { display: block !important; padding: 0 !important; }
+      #idCardContainer { background: transparent !important; padding: 0 !important; }
+      #idCard { box-shadow: none !important; border: 1px solid #999 !important; page-break-inside: avoid; }
     }
   </style>
 </head>
-<body class="min-h-screen">
-  <header class="sticky top-0 z-40 border-b border-line bg-paper/95 backdrop-blur">
-    <div class="site-header-inner mx-auto flex h-[68px] max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-7">
+<body class="min-h-screen bg-[#ffffff]">
+  <header class="sticky top-0 z-40 border-b border-line bg-white/95 backdrop-blur no-print">
+    <div class="mx-auto flex h-[68px] max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-7">
       <a href="#dashboard" onclick="switchTab('dashboard'); return false" class="flex shrink-0 items-center gap-3" aria-label="PSM InternHub home">
-        <img src="assets/logo.png" alt="PSM logo" class="h-10 w-10 rounded-xl object-contain">
-        <span class="leading-tight"><strong class="text-[15px] tracking-tight">Intern<span class="text-moss">Hub</span></strong><span class="block text-[9px] font-semibold uppercase tracking-[.15em] text-muted">Problem Solving Minds</span></span>
+        <img src="assets/logo.png" onerror="if(!this.src.endsWith('assets/logo.png'))this.src='assets/logo.png'" alt="PSM logo" class="h-10 w-10 rounded-xl object-contain">
+        <span class="leading-tight">
+          <strong class="text-[16px] font-extrabold tracking-tight">Intern<span class="text-moss">Hub</span></strong>
+          <span class="block text-[9px] font-bold uppercase tracking-[.16em] text-muted">Problem Solving Minds</span>
+        </span>
       </a>
-      <nav aria-label="Main navigation" class="site-nav no-scrollbar flex min-w-0 flex-1 justify-start gap-1 overflow-x-auto px-2 text-[12px] font-semibold">
+
+      <nav aria-label="Main navigation" class="no-scrollbar flex min-w-0 flex-1 justify-start gap-1 overflow-x-auto px-2 text-[12px]">
         <button data-tab="dashboard" onclick="switchTab('dashboard')" class="nav-link active">Overview</button>
         <button data-tab="students" onclick="switchTab('students')" class="nav-link">Interns</button>
         <button data-tab="public-portfolio" onclick="switchTab('public-portfolio')" class="nav-link">Portfolio</button>
-        <button data-tab="idcard" onclick="switchTab('idcard')" class="nav-link">ID card</button>
+        <button data-tab="idcard" onclick="switchTab('idcard')" class="nav-link">ID Card</button>
         <button data-tab="evaluator" onclick="switchTab('evaluator')" class="nav-link">Grading</button>
       </nav>
-      <div class="admin-label hidden shrink-0 items-center gap-2 lg:flex"><span class="h-2 w-2 rounded-full bg-moss"></span><span class="text-[11px] font-semibold text-ink">Super Admin</span></div>
-      <form action="/logout" method="post" class="shrink-0">
-        <button type="submit" class="rounded-lg border border-line px-3 py-2 text-[11px] font-bold text-moss hover:bg-[#f5f3ff]">Sign out</button>
-      </form>
+
+      <div class="flex items-center gap-2.5 shrink-0">
+        <button type="button" onclick="openAddIntern()" class="hidden md:inline-flex action-button text-[11px] py-1.5 px-3">
+          <i data-lucide="plus" class="h-3.5 w-3.5"></i>
+          <span>Add Intern</span>
+        </button>
+        <div class="hidden lg:flex items-center gap-2 rounded-full bg-[#faf8ff] border border-line px-3 py-1">
+          <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span id="adminUserBadge" class="text-[11px] font-bold text-ink">Super Admin</span>
+        </div>
+        <form action="/logout" method="post" class="m-0">
+          <button type="submit" class="rounded-lg border border-line px-3 py-1.5 text-[11px] font-bold text-moss hover:bg-[#f5f3ff] transition">
+            Sign out
+          </button>
+        </form>
+      </div>
     </div>
   </header>
 
   <main class="mx-auto w-full max-w-[1440px] px-4 py-7 sm:px-7 sm:py-9">
-    <p id="datasetError" class="mb-5 hidden rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-[12px] text-rose-800" role="alert"></p>
+    <div id="datasetAlert" class="mb-5 hidden rounded-xl border p-4 text-[12px] flex items-center justify-between gap-3" role="alert">
+      <span id="datasetAlertText"></span>
+      <button type="button" onclick="document.getElementById('datasetAlert').classList.add('hidden')" class="icon-button h-6 w-6"><i data-lucide="x" class="h-3.5 w-3.5"></i></button>
+    </div>
+
+    <!-- SCREEN 2: EXECUTIVE DASHBOARD OVERVIEW -->
     <section id="view-dashboard" class="space-y-7">
       <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
-        <div><p class="mb-2 text-[10px] font-bold uppercase tracking-[.18em] text-moss">Operations / 2026 cohort</p><h1 class="text-[27px] font-extrabold leading-tight tracking-tight sm:text-[32px]">Executive overview</h1><p class="mt-1.5 text-[13px] text-muted">A live view of intern progress, outcomes, and cohort health.</p></div>
-        <div class="flex items-center gap-2 text-[11px] text-muted"><span class="h-2 w-2 rounded-full bg-emerald-500"></span>Data current for Summer 2026</div>
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-[.18em] text-moss">Operations & Performance</p>
+          <h1 class="text-[28px] font-extrabold tracking-tight sm:text-[34px] text-ink">Executive Overview</h1>
+          <p class="mt-1 text-[13px] text-muted">Authoritative, real-time cohort statistics, evaluation rubrics, and intern progress.</p>
+        </div>
+        <div class="flex items-center gap-2 text-[11px] text-muted bg-[#faf8ff] border border-line px-3 py-1.5 rounded-lg">
+          <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+          <span id="storageModeIndicator">Live Database Synchronized</span>
+        </div>
       </div>
 
       <div class="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-8">
-        <article class="metric"><span>Total interns</span><strong id="metricTotalInterns">0</strong><small id="metricTotalMeta" class="text-moss">Loaded from the active dataset</small></article>
-        <article class="metric"><span>Currently active</span><strong id="metricActiveInterns" class="text-moss">0</strong><small id="metricActiveMeta">In technical sprints</small></article>
-        <article class="metric"><span>Certified</span><strong id="metricCertifiedInterns">0</strong><small id="metricCertifiedMeta" class="text-moss">Verified records</small></article>
-        <article class="metric"><span>Projects</span><strong id="metricProjects">0</strong><small id="metricProjectsMeta">Milestones tracked</small></article>
-        <article class="metric"><span>Avg. performance</span><strong id="metricAvgPerformance">0</strong><small id="metricAvgPerformanceMeta" class="text-amber-700">Grade --</small></article>
-        <article class="metric"><span>Avg. attendance</span><strong id="metricAvgAttendance">0%</strong><small id="metricAvgAttendanceMeta">Approved workdays</small></article>
-        <article class="metric"><span>Active mentors</span><strong id="metricActiveMentors">0</strong><small id="metricActiveMentorsMeta">No mentor data</small></article>
-        <article class="metric"><span>Pending reviews</span><strong id="metricPendingReviews" class="text-rose-700">0</strong><small id="metricPendingReviewsMeta">Tasks to score</small></article>
+        <article class="metric">
+          <span>Total Interns</span>
+          <strong id="metricTotalInterns">0</strong>
+          <small id="metricTotalMeta" class="text-moss">Active database records</small>
+        </article>
+        <article class="metric">
+          <span>Currently Active</span>
+          <strong id="metricActiveInterns" class="text-moss">0</strong>
+          <small id="metricActiveMeta">In technical sprints</small>
+        </article>
+        <article class="metric">
+          <span>Certified</span>
+          <strong id="metricCertifiedInterns">0</strong>
+          <small id="metricCertifiedMeta" class="text-moss">Verified completions</small>
+        </article>
+        <article class="metric">
+          <span>Projects</span>
+          <strong id="metricProjects">0</strong>
+          <small id="metricProjectsMeta">Capstone solutions</small>
+        </article>
+        <article class="metric">
+          <span>Avg. Score</span>
+          <strong id="metricAvgPerformance">0.0</strong>
+          <small id="metricAvgPerformanceMeta" class="text-amber-700">Grade --</small>
+        </article>
+        <article class="metric">
+          <span>Attendance</span>
+          <strong id="metricAvgAttendance">0%</strong>
+          <small id="metricAvgAttendanceMeta">Workday completion</small>
+        </article>
+        <article class="metric">
+          <span>Active Mentors</span>
+          <strong id="metricActiveMentors">0</strong>
+          <small id="metricActiveMentorsMeta">Dedicated guidance</small>
+        </article>
+        <article class="metric">
+          <span>Pending Reviews</span>
+          <strong id="metricPendingReviews" class="text-rose-700">0</strong>
+          <small id="metricPendingReviewsMeta">Tasks to score</small>
+        </article>
       </div>
 
-      <div class="grid gap-4 lg:grid-cols-2">
-        <article class="panel"><div class="mb-5 flex items-start justify-between"><div><h2 class="text-[14px] font-bold">Interns by domain</h2><p class="mt-1 text-[11px] text-muted">Distribution across active specializations</p></div><span class="panel-icon"><i data-lucide="chart-column"></i></span></div><div class="h-[260px]"><canvas id="domainChart" aria-label="Bar chart showing interns by domain"></canvas></div></article>
-        <article class="panel"><div class="mb-5 flex items-start justify-between"><div><h2 class="text-[14px] font-bold">Performance grades</h2><p class="mt-1 text-[11px] text-muted">Final evaluation across the cohort</p></div><span class="panel-icon"><i data-lucide="chart-pie"></i></span></div><div class="h-[260px]"><canvas id="gradeChart" aria-label="Doughnut chart showing grade distribution"></canvas></div></article>
+      <!-- Charts Grid -->
+      <div class="grid gap-5 lg:grid-cols-2">
+        <article class="panel">
+          <div class="mb-4 flex items-start justify-between">
+            <div>
+              <h2 class="text-[15px] font-bold text-ink">Interns by Specialization</h2>
+              <p class="mt-0.5 text-[11px] text-muted">Distribution across technology tracks</p>
+            </div>
+            <span class="panel-icon"><i data-lucide="bar-chart-3"></i></span>
+          </div>
+          <div class="h-[260px]"><canvas id="domainChart" aria-label="Bar chart showing interns by domain"></canvas></div>
+        </article>
+        <article class="panel">
+          <div class="mb-4 flex items-start justify-between">
+            <div>
+              <h2 class="text-[15px] font-bold text-ink">Performance Grade Distribution</h2>
+              <p class="mt-0.5 text-[11px] text-muted">Cohort rubric evaluation results</p>
+            </div>
+            <span class="panel-icon"><i data-lucide="pie-chart"></i></span>
+          </div>
+          <div class="h-[260px]"><canvas id="gradeChart" aria-label="Doughnut chart showing grade distribution"></canvas></div>
+        </article>
+      </div>
+
+      <!-- Top Performers & Quick Action Highlights -->
+      <div class="grid gap-5 lg:grid-cols-3">
+        <article class="panel lg:col-span-2">
+          <div class="mb-4 flex items-center justify-between">
+            <div>
+              <h2 class="text-[15px] font-bold text-ink">Top Performing Interns</h2>
+              <p class="mt-0.5 text-[11px] text-muted">Leading contributors sorted by weighted composite score</p>
+            </div>
+            <button type="button" onclick="switchTab('students')" class="text-[11px] font-bold text-moss hover:underline">View All &rarr;</button>
+          </div>
+          <div id="topPerformersList" class="divide-y divide-line"></div>
+        </article>
+
+        <article class="panel flex flex-col justify-between">
+          <div>
+            <h2 class="text-[15px] font-bold text-ink">Administrative Actions</h2>
+            <p class="mt-0.5 text-[11px] text-muted">Core operations and cohort management</p>
+            <div class="mt-4 space-y-2.5">
+              <button type="button" onclick="openAddIntern()" class="w-full flex items-center justify-between p-3 rounded-xl border border-line bg-[#faf8ff] hover:bg-[#ede9fe] text-left transition group">
+                <div class="flex items-center gap-3">
+                  <div class="grid h-8 w-8 place-items-center rounded-lg bg-moss text-white"><i data-lucide="user-plus" class="h-4 w-4"></i></div>
+                  <div>
+                    <strong class="text-[12px] text-ink block">Register New Intern</strong>
+                    <span class="text-[10px] text-muted">Create record & generate profile</span>
+                  </div>
+                </div>
+                <i data-lucide="chevron-right" class="h-4 w-4 text-muted group-hover:text-moss"></i>
+              </button>
+              <button type="button" onclick="switchTab('evaluator')" class="w-full flex items-center justify-between p-3 rounded-xl border border-line bg-[#faf8ff] hover:bg-[#ede9fe] text-left transition group">
+                <div class="flex items-center gap-3">
+                  <div class="grid h-8 w-8 place-items-center rounded-lg bg-moss text-white"><i data-lucide="calculator" class="h-4 w-4"></i></div>
+                  <div>
+                    <strong class="text-[12px] text-ink block">Weighted Evaluation Rubric</strong>
+                    <span class="text-[10px] text-muted">Grade across 6 technical categories</span>
+                  </div>
+                </div>
+                <i data-lucide="chevron-right" class="h-4 w-4 text-muted group-hover:text-moss"></i>
+              </button>
+              <button type="button" onclick="switchTab('idcard')" class="w-full flex items-center justify-between p-3 rounded-xl border border-line bg-[#faf8ff] hover:bg-[#ede9fe] text-left transition group">
+                <div class="flex items-center gap-3">
+                  <div class="grid h-8 w-8 place-items-center rounded-lg bg-moss text-white"><i data-lucide="printer" class="h-4 w-4"></i></div>
+                  <div>
+                    <strong class="text-[12px] text-ink block">Printable Intern ID Cards</strong>
+                    <span class="text-[10px] text-muted">Official badge with verification QR</span>
+                  </div>
+                </div>
+                <i data-lucide="chevron-right" class="h-4 w-4 text-muted group-hover:text-moss"></i>
+              </button>
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-line text-[11px] text-muted flex items-center justify-between">
+            <span>Backup Data:</span>
+            <button type="button" onclick="exportInterns()" class="font-bold text-moss hover:underline">Export JSON Archive</button>
+          </div>
+        </article>
       </div>
     </section>
 
+    <!-- SCREEN 3: INTERN DIRECTORY & RECORD MANAGEMENT (CRUD) -->
     <section id="view-students" class="hidden space-y-6">
-      <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><p class="mb-2 text-[10px] font-bold uppercase tracking-[.18em] text-moss">People / Directory</p><h1 class="text-[27px] font-extrabold tracking-tight sm:text-[32px]">Intern directory</h1><p class="mt-1 text-[13px] text-muted">Records are saved in the shared server dataset. Export a backup for safekeeping.</p></div><div class="flex flex-wrap items-center gap-2"><button type="button" onclick="openAddIntern()" class="action-button"><i data-lucide="user-plus" class="h-4 w-4"></i><span>Add intern</span></button><button type="button" onclick="exportInterns()" class="action-button"><i data-lucide="download" class="h-4 w-4"></i><span>Export backup</span></button><button type="button" onclick="document.getElementById('backupUpload').click()" class="cancel-button border border-line"><i data-lucide="upload" class="mr-1 inline h-4 w-4"></i>Import backup</button><input id="backupUpload" type="file" accept="application/json,.json" class="hidden" onchange="importInterns(event)"><label class="relative block w-full sm:w-[300px]"><i data-lucide="search" class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"></i><input type="search" id="studentSearch" oninput="filterStudents()" placeholder="Search name, ID, college, domain" class="field w-full pl-9"></label></div></div>
-      <div class="overflow-hidden rounded-xl border border-line bg-white"><div class="overflow-x-auto"><table class="w-full min-w-[950px] text-left text-[12px]" id="studentsTable"><thead class="bg-[#faf8ff] text-[10px] uppercase tracking-wider text-muted"><tr><th class="px-4 py-3.5">Intern</th><th class="px-4 py-3.5">College / domain</th><th class="px-4 py-3.5">Role</th><th class="px-4 py-3.5">Mentor</th><th class="px-4 py-3.5 text-center">Days</th><th class="px-4 py-3.5 text-center">Score</th><th class="px-4 py-3.5 text-center">Status</th><th class="px-4 py-3.5 text-right">Actions</th></tr></thead><tbody id="internRows" class="divide-y divide-line"></tbody></table></div><p id="emptyState" class="hidden px-5 py-12 text-center text-[13px] text-muted">No interns match that search.</p></div>
-      <p class="text-[11px] text-muted">Showing <span id="resultCount" class="font-semibold text-ink">0</span> student records</p>
+      <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-[.18em] text-moss">Cohort Directory</p>
+          <h1 class="text-[28px] font-extrabold tracking-tight sm:text-[34px] text-ink">Intern Management</h1>
+          <p class="mt-1 text-[13px] text-muted">Add, inspect, evaluate, and manage student internship profiles with live dual-storage synchronization.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button" onclick="openAddIntern()" class="action-button">
+            <i data-lucide="user-plus" class="h-4 w-4"></i>
+            <span>Add Intern</span>
+          </button>
+          <button type="button" onclick="exportInterns()" class="cancel-button border border-line">
+            <i data-lucide="download" class="mr-1 inline h-4 w-4"></i>
+            <span>Export Backup</span>
+          </button>
+          <button type="button" onclick="document.getElementById('backupUpload').click()" class="cancel-button border border-line">
+            <i data-lucide="upload" class="mr-1 inline h-4 w-4"></i>
+            <span>Import Backup</span>
+          </button>
+          <input id="backupUpload" type="file" accept="application/json,.json" class="hidden" onchange="importInterns(event)">
+        </div>
+      </div>
+
+      <!-- Search, Domain, Status Filters & Sorting Bar -->
+      <div class="p-4 rounded-xl border border-line bg-white shadow-sm flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+        <label class="relative block flex-1">
+          <i data-lucide="search" class="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"></i>
+          <input type="search" id="studentSearch" oninput="filterStudents()" placeholder="Search by name, intern ID, college, domain, or role..." class="field w-full pl-10">
+        </label>
+        <div class="flex flex-wrap items-center gap-2">
+          <select id="domainFilter" onchange="filterStudents()" class="field min-w-[150px]">
+            <option value="">All Domains</option>
+          </select>
+          <select id="statusFilter" onchange="filterStudents()" class="field">
+            <option value="">All Statuses</option>
+            <option value="ACTIVE">ACTIVE</option>
+            <option value="COMPLETED">COMPLETED</option>
+          </select>
+          <select id="sortFilter" onchange="filterStudents()" class="field">
+            <option value="name_asc">Sort: Name (A-Z)</option>
+            <option value="name_desc">Sort: Name (Z-A)</option>
+            <option value="score_desc">Sort: Score (Highest)</option>
+            <option value="score_asc">Sort: Score (Lowest)</option>
+            <option value="days_desc">Sort: Attendance (Days)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Data Table -->
+      <div class="overflow-hidden rounded-xl border border-line bg-white shadow-sm">
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[1020px] text-left text-[12px]" id="studentsTable">
+            <thead class="bg-[#faf8ff] text-[10px] uppercase tracking-wider text-muted border-b border-line">
+              <tr>
+                <th class="px-4 py-3.5">Intern Name & ID</th>
+                <th class="px-4 py-3.5">College / Domain</th>
+                <th class="px-4 py-3.5">Assigned Role</th>
+                <th class="px-4 py-3.5">Mentor</th>
+                <th class="px-4 py-3.5 text-center">Days / Total</th>
+                <th class="px-4 py-3.5 text-center">Score / Grade</th>
+                <th class="px-4 py-3.5 text-center">Status</th>
+                <th class="px-4 py-3.5 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="internRows" class="divide-y divide-line"></tbody>
+          </table>
+        </div>
+        <p id="emptyState" class="hidden px-5 py-12 text-center text-[13px] text-muted">No intern records match the current filter criteria.</p>
+      </div>
+      <div class="flex items-center justify-between text-[11px] text-muted">
+        <span>Showing <strong id="resultCount" class="font-bold text-ink">0</strong> student records</span>
+        <span class="font-mono">Live updates active</span>
+      </div>
     </section>
 
-    <section id="view-public-portfolio" class="hidden space-y-5">
-      <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-end"><div><p class="mb-2 text-[10px] font-bold uppercase tracking-[.18em] text-moss">Credential / Public profile</p><h1 class="text-[27px] font-extrabold tracking-tight sm:text-[32px]">Verified portfolio</h1></div><div class="portfolio-admin-controls flex flex-wrap items-center gap-2"><label class="text-[11px] font-semibold text-muted">Select intern <select id="portfolioSelect" onchange="selectIntern(this.value)" class="field ml-2 min-w-[190px]"></select></label><button type="button" onclick="openEditIntern()" class="action-button"><i data-lucide="pencil" class="h-4 w-4"></i><span>Edit intern</span></button></div></div>
-      <article class="overflow-hidden rounded-xl border border-line bg-white">
-        <div class="grid gap-6 border-b border-line p-5 sm:grid-cols-[auto_1fr_auto] sm:items-center sm:p-7">
-          <img id="portfolioPhoto" src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&auto=format&fit=crop&q=80" alt="Intern portrait" class="h-24 w-24 rounded-xl object-cover ring-1 ring-line sm:h-28 sm:w-28">
+    <!-- SCREEN 4: VERIFIED PORTFOLIO PREVIEW -->
+    <section id="view-public-portfolio" class="hidden space-y-6">
+      <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-[.18em] text-moss">Student Credential</p>
+          <h1 class="text-[28px] font-extrabold tracking-tight sm:text-[34px] text-ink">Verified Portfolio Preview</h1>
+          <p class="mt-1 text-[13px] text-muted">Preview the verified public profile and QR-authenticated credential.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <label class="text-[11px] font-semibold text-muted">
+            Select Intern:
+            <select id="portfolioSelect" onchange="selectIntern(this.value)" class="field ml-2 min-w-[200px]"></select>
+          </label>
+          <button type="button" onclick="openEditIntern()" class="action-button">
+            <i data-lucide="edit-3" class="h-3.5 w-3.5"></i>
+            <span>Edit Profile</span>
+          </button>
+        </div>
+      </div>
+
+      <article class="overflow-hidden rounded-2xl border border-line bg-white shadow-md">
+        <!-- Profile Banner -->
+        <div class="grid gap-6 border-b border-line p-6 sm:grid-cols-[auto_1fr_auto] sm:items-center sm:p-8 bg-gradient-to-r from-white via-white to-[#faf8ff]">
+          <div class="relative">
+            <img id="portfolioPhoto" src="" alt="Intern portrait" class="h-28 w-28 rounded-2xl object-cover ring-2 ring-line shadow-sm">
+            <div id="portfolioInitialsFallback" class="hidden h-28 w-28 rounded-2xl bg-[#ede9fe] text-moss font-bold text-2xl grid place-items-center ring-2 ring-line">PS</div>
+          </div>
           <div>
             <div class="flex flex-wrap items-center gap-2">
-              <span class="inline-flex items-center gap-1.5 rounded-full bg-[#ede9fe] px-2.5 py-1 text-[10px] font-bold text-moss"><i data-lucide="badge-check" class="h-3.5 w-3.5"></i> PSM verified credential</span>
-              <a id="portfolioGithub" href="#" target="_blank" rel="noopener noreferrer" class="hidden inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-2.5 py-1 text-[10px] font-bold text-ink hover:bg-[#f5f3ff] hover:text-moss transition-colors shadow-sm" title="View GitHub Profile"><i data-lucide="github" class="h-3 w-3"></i><span>GitHub</span></a>
+              <span class="inline-flex items-center gap-1.5 rounded-full bg-[#ede9fe] px-3 py-1 text-[10px] font-bold text-moss">
+                <i data-lucide="shield-check" class="h-3.5 w-3.5"></i>
+                <span>PSM Authenticated Credential</span>
+              </span>
+              <a id="portfolioGithub" href="#" target="_blank" rel="noopener noreferrer" class="hidden inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-3 py-1 text-[10px] font-bold text-ink hover:bg-[#f5f3ff] transition shadow-sm">
+                <i data-lucide="github" class="h-3 w-3"></i>
+                <span>GitHub Profile</span>
+              </a>
             </div>
-            <h2 id="portfolioName" class="mt-2 text-[25px] font-extrabold tracking-tight">Aarav Sharma</h2>
-            <p id="portfolioRole" class="mt-1 text-[13px] font-semibold text-moss"></p>
-            <p id="portfolioCollege" class="mt-1 text-[12px] text-muted"></p>
+            <h2 id="portfolioName" class="mt-2.5 text-[26px] font-extrabold tracking-tight text-ink">--</h2>
+            <p id="portfolioRole" class="mt-0.5 text-[14px] font-semibold text-moss"></p>
+            <p id="portfolioCollege" class="mt-0.5 text-[12px] text-muted"></p>
+            <!-- Attendance bar -->
+            <div class="mt-3 max-w-xs">
+              <div class="flex items-center justify-between text-[10px] font-bold text-muted mb-1">
+                <span>Attendance Progress</span>
+                <span id="portfolioAttendanceText" class="font-mono text-ink">0%</span>
+              </div>
+              <div class="h-2 w-full bg-[#ede9fe] rounded-full overflow-hidden">
+                <div id="portfolioAttendanceBar" class="h-full bg-moss rounded-full transition-all duration-300" style="width: 0%;"></div>
+              </div>
+            </div>
           </div>
-          <div class="border-t border-line pt-4 sm:border-l sm:border-t-0 sm:pl-7 sm:pt-0"><p class="text-[10px] font-bold uppercase tracking-wider text-muted">Composite score</p><p id="portfolioScore" class="mt-1 text-[34px] font-extrabold leading-none">94.5</p><p id="portfolioGrade" class="mt-1 text-[11px] font-bold text-moss"></p></div>
+          <div class="border-t border-line pt-4 sm:border-l sm:border-t-0 sm:pl-8 sm:pt-0 text-center sm:text-right">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-muted">Composite Score</p>
+            <p id="portfolioScore" class="mt-1 text-[38px] font-extrabold leading-none text-ink font-mono">0.0</p>
+            <p id="portfolioGrade" class="mt-1 text-[12px] font-bold text-moss"></p>
+          </div>
         </div>
-        <div class="grid md:grid-cols-[1fr_240px]">
-          <div class="p-5 sm:p-7"><p class="text-[10px] font-bold uppercase tracking-wider text-muted">Capstone project</p><h3 id="portfolioProject" class="mt-2 text-[19px] font-extrabold text-moss">PSM TalentPulse - AI Candidate Match Engine</h3><p id="portfolioDescription" class="mt-2 max-w-2xl text-[13px] leading-6 text-[#526159]"></p><div id="portfolioSkills" class="mt-4 flex flex-wrap gap-2"></div></div>
-          <aside class="flex flex-col items-center justify-center border-t border-line bg-[#faf8ff] p-5 md:border-l md:border-t-0">
-            <p class="mb-2 text-[11px] font-bold text-ink">Individual Profile QR</p>
-            <div id="portfolioQr" class="rounded-lg bg-white p-2 shadow-sm border border-line"></div>
-            <span id="portfolioQrLabel" class="hidden"></span>
-            <div class="mt-3 flex flex-wrap justify-center gap-1.5 w-full">
-              <button type="button" onclick="copySelectedProfileUrl()" class="rounded-md border border-line bg-white px-2 py-1 text-[10px] font-bold text-moss hover:bg-[#f5f3ff]">Copy</button>
-              <button type="button" onclick="downloadSelectedQrCode()" class="rounded-md bg-moss px-2 py-1 text-[10px] font-bold text-white hover:bg-[#6d28d9]">Save PNG</button>
-              <button type="button" onclick="openSelectedProfileTab()" class="rounded-md border border-line bg-white px-2 py-1 text-[10px] font-bold text-ink hover:bg-[#f5f3ff]">Open</button>
+
+        <div class="grid md:grid-cols-[1fr_260px]">
+          <div class="p-6 sm:p-8 space-y-6">
+            <div>
+              <p class="text-[10px] font-bold uppercase tracking-wider text-muted">Capstone Project Deliverable</p>
+              <h3 id="portfolioProject" class="mt-1.5 text-[20px] font-extrabold text-moss">--</h3>
+              <p id="portfolioDescription" class="mt-2 text-[13px] leading-relaxed text-[#526159]">--</p>
+              <div id="portfolioSkills" class="mt-4 flex flex-wrap gap-2"></div>
             </div>
-            <p id="qrHostingNotice" class="mt-2 max-w-[210px] text-center text-[9px] leading-4 text-muted">Scan to open this student's verified profile directly on mobile.</p>
+
+            <!-- Rubric Mark Breakdown -->
+            <div class="pt-4 border-t border-line">
+              <p class="text-[10px] font-bold uppercase tracking-wider text-muted mb-3">Evaluation Rubric Marks</p>
+              <div id="portfolioMarksGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
+            </div>
+
+            <!-- Mentor Review Note -->
+            <div id="portfolioMentorBlock" class="pt-4 border-t border-line">
+              <p class="text-[10px] font-bold uppercase tracking-wider text-muted">Mentor Feedback</p>
+              <blockquote id="portfolioMentorReview" class="mt-2 text-[12px] italic text-[#4c5851] bg-[#faf8ff] p-3.5 rounded-xl border border-line">--</blockquote>
+            </div>
+          </div>
+
+          <aside class="flex flex-col items-center justify-center border-t border-line bg-[#faf8ff] p-6 md:border-l md:border-t-0">
+            <p class="mb-2 text-[12px] font-bold text-ink">Public Profile QR</p>
+            <div id="portfolioQr" class="rounded-xl bg-white p-2.5 shadow-sm border border-line"></div>
+            <span id="portfolioQrLabel" class="hidden"></span>
+            <div class="mt-4 flex flex-wrap justify-center gap-1.5 w-full">
+              <button type="button" onclick="copySelectedProfileUrl()" class="rounded-lg border border-line bg-white px-2.5 py-1 text-[10px] font-bold text-moss hover:bg-[#f5f3ff]">Copy URL</button>
+              <button type="button" onclick="downloadSelectedQrCode()" class="rounded-lg bg-moss px-2.5 py-1 text-[10px] font-bold text-white hover:bg-mossDark">Save PNG</button>
+              <button type="button" onclick="openSelectedProfileTab()" class="rounded-lg border border-line bg-white px-2.5 py-1 text-[10px] font-bold text-ink hover:bg-[#f5f3ff]">Open Tab</button>
+            </div>
+            <p id="qrHostingNotice" class="mt-3 max-w-[210px] text-center text-[9px] leading-4 text-muted">Scan to open this intern's verified profile directly on mobile.</p>
           </aside>
         </div>
       </article>
     </section>
 
+    <!-- SCREEN 5: DIGITAL PRINTABLE ID CARD -->
     <section id="view-idcard" class="hidden space-y-6">
-      <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-end"><div><p class="mb-2 text-[10px] font-bold uppercase tracking-[.18em] text-moss">Credential / Printable pass</p><h1 class="text-[27px] font-extrabold tracking-tight sm:text-[32px]">Intern ID card</h1><p class="mt-1 text-[13px] text-muted">Print a scannable identity card for the selected intern.</p></div><div class="flex flex-wrap items-center gap-2"><select id="idcardSelect" onchange="selectIntern(this.value)" class="field min-w-[180px]"></select><button type="button" onclick="openEditIntern()" class="action-button"><i data-lucide="pencil" class="h-4 w-4"></i><span>Edit intern</span></button><button type="button" onclick="window.print()" class="action-button"><i data-lucide="printer" class="h-4 w-4"></i><span>Print card</span></button></div></div>
-      <div class="flex justify-center bg-[#f5f3ff] p-5 sm:p-10"><article id="idCard" class="w-full max-w-[370px] overflow-hidden rounded-2xl border border-[#ddd6fe] bg-white shadow-lg">
-        <div class="flex items-center justify-between bg-moss px-5 py-4 text-white"><div class="flex items-center gap-2.5"><span class="grid h-8 w-8 place-items-center rounded-lg border border-white/25 text-[9px] font-extrabold">PSM</span><span class="text-[13px] font-bold">InternHub</span></div><span class="text-[9px] font-bold uppercase tracking-[.15em] text-[#ede9fe]">Official ID</span></div>
-        <div class="p-5"><div class="flex items-center gap-4"><img id="idcardPhoto" src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&auto=format&fit=crop&q=80" alt="Intern portrait" class="h-[76px] w-[76px] rounded-xl object-cover"><div class="min-w-0"><h2 id="idcardName" class="text-[16px] font-extrabold"></h2><p id="idcardId" class="mt-1 break-all font-mono text-[10px] font-semibold text-moss"></p><p id="idcardRole" class="mt-1 text-[11px] font-semibold"></p><p id="idcardDomain" class="mt-0.5 text-[10px] text-muted"></p></div></div><div class="mt-4 flex justify-between border-y border-line py-3 text-[10px]"><span class="text-muted">Batch <strong class="ml-1 text-ink">Summer 2026</strong></span><span class="text-muted">Status <strong id="idcardStatus" class="ml-1 text-moss"></strong></span></div><div class="mt-4 flex flex-col items-center gap-2 rounded-xl bg-[#faf8ff] p-4 text-center"><div><p class="text-[11px] font-bold">Scan to open student profile</p><p class="mt-1 text-[9px] text-muted">Official PSM portfolio</p></div><div id="idcardQr" class="rounded-md bg-white p-2"></div></div></div>
-      </article></div>
+      <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-end no-print">
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-[.18em] text-moss">Official Identification</p>
+          <h1 class="text-[28px] font-extrabold tracking-tight sm:text-[34px] text-ink">Printable Intern ID Card</h1>
+          <p class="mt-1 text-[13px] text-muted">Official digital badge with embedded verification QR code linking to the live public portfolio.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <select id="idcardSelect" onchange="selectIntern(this.value)" class="field min-w-[200px]"></select>
+          <button type="button" onclick="window.print()" class="action-button">
+            <i data-lucide="printer" class="h-4 w-4"></i>
+            <span>Print ID Card</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="idCardContainer" class="flex justify-center bg-[#f5f3ff] p-6 sm:p-12 rounded-2xl border border-line">
+        <article id="idCard" class="w-full max-w-[380px] overflow-hidden rounded-2xl border border-[#ddd6fe] bg-white shadow-xl">
+          <!-- Card Header Banner -->
+          <div class="flex items-center justify-between bg-moss px-6 py-4 text-white">
+            <div class="flex items-center gap-3">
+              <span class="grid h-8 w-8 place-items-center rounded-lg border border-white/30 text-[10px] font-extrabold tracking-wider bg-white/10">PSM</span>
+              <span class="text-[14px] font-extrabold tracking-tight">InternHub</span>
+            </div>
+            <span class="text-[9px] font-extrabold uppercase tracking-[.18em] text-[#ede9fe] bg-white/10 px-2 py-0.5 rounded">Official Pass</span>
+          </div>
+
+          <div class="p-6">
+            <div class="flex items-center gap-4">
+              <img id="idcardPhoto" src="" alt="Intern portrait" class="h-20 w-20 rounded-xl object-cover ring-1 ring-line shadow-sm">
+              <div id="idcardInitialsFallback" class="hidden h-20 w-20 rounded-xl bg-[#ede9fe] text-moss font-bold text-xl grid place-items-center ring-1 ring-line">PS</div>
+              <div class="min-w-0 flex-1">
+                <h2 id="idcardName" class="text-[17px] font-extrabold text-ink truncate"></h2>
+                <p id="idcardId" class="mt-0.5 font-mono text-[11px] font-bold text-moss"></p>
+                <p id="idcardRole" class="mt-0.5 text-[11px] font-semibold text-ink truncate"></p>
+                <p id="idcardDomain" class="mt-0.5 text-[10px] text-muted truncate"></p>
+              </div>
+            </div>
+
+            <div class="mt-4 flex justify-between border-y border-line py-3 text-[11px]">
+              <span class="text-muted">Batch: <strong class="ml-1 text-ink font-semibold">2026 Cohort</strong></span>
+              <span class="text-muted">Status: <strong id="idcardStatus" class="ml-1 text-moss font-bold">ACTIVE</strong></span>
+            </div>
+
+            <div class="mt-4 flex flex-col items-center gap-2 rounded-xl bg-[#faf8ff] p-4 text-center border border-line">
+              <div>
+                <p class="text-[11px] font-bold text-ink">Scan to Verify Credential</p>
+                <p class="mt-0.5 text-[9px] text-muted">PSM Evaluation Board</p>
+              </div>
+              <div id="idcardQr" class="rounded-lg bg-white p-2 shadow-sm border border-line"></div>
+            </div>
+          </div>
+        </article>
+      </div>
     </section>
 
+    <!-- SCREEN: WEIGHTED GRADING RUBRIC & EVALUATION -->
     <section id="view-evaluator" class="hidden space-y-6">
-      <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-end"><div><p class="mb-2 text-[10px] font-bold uppercase tracking-[.18em] text-moss">Tools / Evaluation</p><h1 class="text-[27px] font-extrabold tracking-tight sm:text-[32px]">Weighted grading</h1><p class="mt-1 text-[13px] text-muted">Adjust the rubric scores to calculate the intern's overall result.</p></div><label class="text-[11px] font-semibold text-muted">Select intern <select id="evaluatorSelect" onchange="selectIntern(this.value)" class="field ml-2 min-w-[190px]"></select></label></div>
-      <div class="mx-auto max-w-[760px] overflow-hidden rounded-xl border border-line bg-white">
-        <div class="flex items-start justify-between border-b border-line px-5 py-4 sm:px-6"><div><h2 class="text-[14px] font-bold">Evaluation rubric</h2><p class="mt-1 text-[11px] text-muted">Select scores from 0 to 100 for each category.</p></div><i data-lucide="calculator" class="h-5 w-5 text-moss"></i></div>
-        <div class="border-b border-line px-5 py-3 text-[11px] text-muted sm:px-6">Evaluation for <strong id="evaluationInternName" class="text-ink">Selected intern</strong> <span id="evaluationInternId" class="font-mono"></span></div>
-        <div class="grid gap-x-5 gap-y-4 p-5 sm:grid-cols-2 sm:p-6">
-          <label class="score-field">Technical skills <span>25%</span><input type="number" min="0" max="100" step="0.5" id="s_tech" required oninput="calculateScore()"></label>
-          <label class="score-field">Project quality <span>25%</span><input type="number" min="0" max="100" step="0.5" id="s_qual" required oninput="calculateScore()"></label>
-          <label class="score-field">Problem solving <span>20%</span><input type="number" min="0" max="100" step="0.5" id="s_prob" required oninput="calculateScore()"></label>
-          <label class="score-field">Task completion <span>15%</span><input type="number" min="0" max="100" step="0.5" id="s_task" required oninput="calculateScore()"></label>
+      <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-[.18em] text-moss">Tools & Assessment</p>
+          <h1 class="text-[28px] font-extrabold tracking-tight sm:text-[34px] text-ink">Weighted Evaluation Rubric</h1>
+          <p class="mt-1 text-[13px] text-muted">Calculate standardized percentage performance based on 6 core criteria.</p>
+        </div>
+        <label class="text-[11px] font-semibold text-muted">
+          Select Intern:
+          <select id="evaluatorSelect" onchange="selectIntern(this.value)" class="field ml-2 min-w-[200px]"></select>
+        </label>
+      </div>
+
+      <div class="mx-auto max-w-[820px] overflow-hidden rounded-2xl border border-line bg-white shadow-md">
+        <div class="flex items-start justify-between border-b border-line px-6 py-4 bg-[#faf8ff]">
+          <div>
+            <h2 class="text-[15px] font-bold text-ink">Evaluation Rubric & Mentor Review</h2>
+            <p class="mt-0.5 text-[11px] text-muted">Input category marks from 0 to 100.</p>
+          </div>
+          <i data-lucide="calculator" class="h-5 w-5 text-moss"></i>
+        </div>
+
+        <div class="border-b border-line px-6 py-3 text-[12px] text-muted flex items-center justify-between">
+          <span>Candidate: <strong id="evaluationInternName" class="text-ink">Selected Intern</strong> <span id="evaluationInternId" class="font-mono text-moss ml-1 font-semibold"></span></span>
+          <span id="evaluationAttendancePreview" class="text-[11px]"></span>
+        </div>
+
+        <div class="grid gap-x-6 gap-y-4 p-6 sm:grid-cols-2">
+          <label class="score-field">Technical Skills <span>25%</span><input type="number" min="0" max="100" step="0.5" id="s_tech" required oninput="calculateScore()"></label>
+          <label class="score-field">Project Quality <span>25%</span><input type="number" min="0" max="100" step="0.5" id="s_qual" required oninput="calculateScore()"></label>
+          <label class="score-field">Problem Solving <span>20%</span><input type="number" min="0" max="100" step="0.5" id="s_prob" required oninput="calculateScore()"></label>
+          <label class="score-field">Task Completion <span>15%</span><input type="number" min="0" max="100" step="0.5" id="s_task" required oninput="calculateScore()"></label>
           <label class="score-field">Communication <span>10%</span><input type="number" min="0" max="100" step="0.5" id="s_comm" required oninput="calculateScore()"></label>
           <label class="score-field">Teamwork <span>5%</span><input type="number" min="0" max="100" step="0.5" id="s_team" required oninput="calculateScore()"></label>
-          <label class="edit-field">Mentor name<input id="evaluatorMentorName" maxlength="100"></label>
-          <label class="edit-field">Mentor ID<input id="evaluatorMentorId" maxlength="100"></label>
-          <label class="edit-field sm:col-span-2">Mentor review<textarea id="evaluatorReview" rows="3" maxlength="2000"></textarea></label>
-          <label class="edit-field sm:col-span-2">Evaluation notes<textarea id="evaluatorEvaluation" rows="3" maxlength="2000"></textarea></label>
+
+          <label class="edit-field">Mentor Name<input id="evaluatorMentorName" maxlength="100" placeholder="e.g. Dr. Alex Mercer"></label>
+          <label class="edit-field">Mentor ID<input id="evaluatorMentorId" maxlength="100" placeholder="e.g. MTR-2026-08"></label>
+          <label class="edit-field sm:col-span-2">Official Mentor Review (Public on Portfolio)<textarea id="evaluatorReview" rows="3" maxlength="2000" placeholder="Comprehensive feedback regarding deliverables, initiative, and teamwork..."></textarea></label>
+          <label class="edit-field sm:col-span-2">Evaluation Notes & Technical Feedback<textarea id="evaluatorEvaluation" rows="3" maxlength="2000" placeholder="Milestone accomplishments, code review notes, and improvement areas..."></textarea></label>
         </div>
-        <div class="mx-5 mb-5 flex flex-wrap items-center justify-between gap-4 rounded-lg bg-[#faf8ff] border border-line p-4 sm:mx-6 sm:mb-6 sm:p-5"><div><p class="text-[10px] font-bold uppercase tracking-wider text-moss">Overall score</p><p id="res_grade" class="mt-1 text-[12px] font-bold">Grade --</p><p id="scoreError" class="mt-1 hidden text-[11px] font-semibold text-rose-700">Scores must be between 0 and 100.</p><p id="evaluationSaveStatus" class="mt-1 text-[11px] text-muted" aria-live="polite"></p></div><div class="flex items-center gap-3"><p id="res_score" class="font-mono text-[32px] font-medium leading-none">0.0</p><button type="button" onclick="saveEvaluation()" class="action-button">Save evaluation</button></div></div>
+
+        <div class="mx-6 mb-6 flex flex-wrap items-center justify-between gap-4 rounded-xl bg-[#faf8ff] border border-line p-5">
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-wider text-moss">Overall Weighted Score</p>
+            <p id="res_grade" class="mt-1 text-[13px] font-bold text-ink">Grade --</p>
+            <p id="scoreError" class="mt-1 hidden text-[11px] font-semibold text-rose-700">All rubric category scores must be numbers between 0 and 100.</p>
+            <p id="evaluationSaveStatus" class="mt-1 text-[11px] text-muted" aria-live="polite"></p>
+          </div>
+          <div class="flex items-center gap-4">
+            <p id="res_score" class="font-mono text-[36px] font-bold leading-none text-ink">0.0</p>
+            <button type="button" onclick="saveEvaluation()" class="action-button">Save Evaluation</button>
+          </div>
+        </div>
       </div>
     </section>
   </main>
 
-  <footer class="mt-8 border-t border-line px-4 py-5 text-center text-[10px] text-muted">© 2026 Problem Solving Minds · InternHub</footer>
+  <footer class="mt-12 border-t border-line px-4 py-6 text-center text-[11px] text-muted no-print">
+    © 2026 Problem Solving Minds · PSM InternHub Management Platform
+  </footer>
 
-  <dialog id="editInternDialog" class="edit-dialog w-[min(680px,calc(100%-24px))] rounded-xl border border-line bg-white p-0 text-ink shadow-2xl backdrop:bg-ink/40">
+  <!-- EDIT / ADD INTERN MODAL DIALOG -->
+  <dialog id="editInternDialog" class="edit-dialog w-[min(700px,calc(100%-24px))] rounded-2xl border border-line bg-white p-0 text-ink shadow-2xl">
     <form id="editInternForm" onsubmit="saveIntern(event)">
-      <div class="flex items-start justify-between border-b border-line px-5 py-4 sm:px-6"><div><h2 id="editInternTitle" class="text-[17px] font-extrabold">Edit intern information</h2><p class="mt-1 text-[11px] text-muted">Changes are saved in this browser.</p></div><button type="button" onclick="closeEditIntern()" class="icon-button" aria-label="Close edit dialog"><i data-lucide="x" class="h-4 w-4"></i></button></div>
-      <div class="grid max-h-[70vh] grid-cols-1 gap-4 overflow-y-auto px-5 py-5 sm:grid-cols-2 sm:px-6">
-        <label class="edit-field">Full name<input name="name" required maxlength="100"></label>
-        <label class="edit-field">Intern ID<input name="id" required maxlength="100"></label>
-        <label class="edit-field">College<input name="college" required maxlength="120"></label>
-        <label class="edit-field">Domain<input name="domain" required maxlength="100"></label>
-        <label class="edit-field sm:col-span-2">Role title<input name="role" required maxlength="120"></label>
-        <label class="edit-field">Working days<input name="days" type="number" min="0" required></label>
-        <label class="edit-field">Total working days<input name="total" type="number" min="1" required></label>
-        <label class="edit-field">Calculated score<input name="score" type="number" min="0" max="100" step="0.1" readonly required></label>
+      <div class="flex items-start justify-between border-b border-line px-6 py-4 bg-[#faf8ff]">
+        <div>
+          <h2 id="editInternTitle" class="text-[18px] font-extrabold text-ink">Edit Intern Information</h2>
+          <p class="mt-0.5 text-[11px] text-muted">Authoritative records stored in database with offline fallback.</p>
+        </div>
+        <button type="button" onclick="closeEditIntern()" class="icon-button" aria-label="Close dialog"><i data-lucide="x" class="h-4 w-4"></i></button>
+      </div>
+
+      <div class="grid max-h-[70vh] grid-cols-1 gap-4 overflow-y-auto px-6 py-5 sm:grid-cols-2">
+        <label class="edit-field">Full Name<input name="name" required maxlength="100"></label>
+        <label class="edit-field">Intern ID<input name="id" id="formInternId" required maxlength="100"></label>
+        <label class="edit-field">College / University<input name="college" required maxlength="120"></label>
+        <label class="edit-field">Specialization Domain<input name="domain" required maxlength="100"></label>
+        <label class="edit-field sm:col-span-2">Assigned Role<input name="role" required maxlength="120"></label>
+        <label class="edit-field">Days Completed<input name="days" type="number" min="0" required></label>
+        <label class="edit-field">Total Internship Days<input name="total" type="number" min="1" required></label>
+        <label class="edit-field">Calculated Score<input name="score" type="number" min="0" max="100" step="0.1" readonly required></label>
         <label class="edit-field">Status<select name="status"><option value="ACTIVE">ACTIVE</option><option value="COMPLETED">COMPLETED</option></select></label>
-        <label class="edit-field">Mentor name<input name="mentorName" maxlength="100"></label>
+        <label class="edit-field">Mentor Name<input name="mentorName" maxlength="100"></label>
         <label class="edit-field">Mentor ID<input name="mentorId" maxlength="100"></label>
-        <div class="sm:col-span-2"><p class="mb-3 text-[11px] font-bold text-ink">Mark allocation <span class="font-normal text-muted">— weighted score from the rubric</span></p><div class="grid gap-x-4 gap-y-3 sm:grid-cols-2">
-          <label class="score-field">Technical skills <span>25%</span><input type="number" min="0" max="100" step="0.5" name="mark_technical" required oninput="calculateEditScore()"></label>
-          <label class="score-field">Project quality <span>25%</span><input type="number" min="0" max="100" step="0.5" name="mark_projectQuality" required oninput="calculateEditScore()"></label>
-          <label class="score-field">Problem solving <span>20%</span><input type="number" min="0" max="100" step="0.5" name="mark_problemSolving" required oninput="calculateEditScore()"></label>
-          <label class="score-field">Task completion <span>15%</span><input type="number" min="0" max="100" step="0.5" name="mark_taskCompletion" required oninput="calculateEditScore()"></label>
-          <label class="score-field">Communication <span>10%</span><input type="number" min="0" max="100" step="0.5" name="mark_communication" required oninput="calculateEditScore()"></label>
-          <label class="score-field">Teamwork <span>5%</span><input type="number" min="0" max="100" step="0.5" name="mark_teamwork" required oninput="calculateEditScore()"></label>
-        </div></div>
-        <label class="edit-field sm:col-span-2">Mentor review<textarea name="mentorReview" rows="3" maxlength="2000"></textarea></label>
-        <label class="edit-field sm:col-span-2">Evaluation notes<textarea name="evaluation" rows="3" maxlength="2000"></textarea></label>
-        <label class="edit-field sm:col-span-2">Photo image URL<input name="photo" type="url" placeholder="https://example.com/photo.jpg"></label>
-        <label class="edit-field sm:col-span-2">Upload photo<input id="photoUpload" name="photoFile" type="file" accept="image/*"></label>
-        <label class="edit-field sm:col-span-2">Capstone project<input name="project" maxlength="160"></label>
-        <label class="edit-field sm:col-span-2">Project description<textarea name="description" rows="3" maxlength="500"></textarea></label>
-        <label class="edit-field sm:col-span-2">Skills, comma separated<input name="skills" placeholder="React, TypeScript, Node.js"></label>
-        <label class="edit-field sm:col-span-2">GitHub profile / repository URL<input name="github" type="url" placeholder="https://github.com/username"></label>
+
+        <div class="sm:col-span-2">
+          <p class="mb-2.5 text-[11px] font-bold text-ink">Rubric Marks Allocation <span class="font-normal text-muted">— Weighted calculation</span></p>
+          <div class="grid gap-x-4 gap-y-3 sm:grid-cols-2 bg-[#faf8ff] p-3.5 rounded-xl border border-line">
+            <label class="score-field">Technical Skills <span>25%</span><input type="number" min="0" max="100" step="0.5" name="mark_technical" required oninput="calculateEditScore()"></label>
+            <label class="score-field">Project Quality <span>25%</span><input type="number" min="0" max="100" step="0.5" name="mark_projectQuality" required oninput="calculateEditScore()"></label>
+            <label class="score-field">Problem Solving <span>20%</span><input type="number" min="0" max="100" step="0.5" name="mark_problemSolving" required oninput="calculateEditScore()"></label>
+            <label class="score-field">Task Completion <span>15%</span><input type="number" min="0" max="100" step="0.5" name="mark_taskCompletion" required oninput="calculateEditScore()"></label>
+            <label class="score-field">Communication <span>10%</span><input type="number" min="0" max="100" step="0.5" name="mark_communication" required oninput="calculateEditScore()"></label>
+            <label class="score-field">Teamwork <span>5%</span><input type="number" min="0" max="100" step="0.5" name="mark_teamwork" required oninput="calculateEditScore()"></label>
+          </div>
+        </div>
+
+        <label class="edit-field sm:col-span-2">Mentor Review<textarea name="mentorReview" rows="2" maxlength="2000"></textarea></label>
+        <label class="edit-field sm:col-span-2">Evaluation Notes<textarea name="evaluation" rows="2" maxlength="2000"></textarea></label>
+        <label class="edit-field sm:col-span-2">Photo URL (optional)<input name="photo" type="url" placeholder="https://example.com/photo.jpg"></label>
+        <label class="edit-field sm:col-span-2">Or Upload Photo File<input id="photoUpload" name="photoFile" type="file" accept="image/*" class="p-1"></label>
+        <label class="edit-field sm:col-span-2">Capstone Project Title<input name="project" maxlength="160"></label>
+        <label class="edit-field sm:col-span-2">Project Description<textarea name="description" rows="2" maxlength="500"></textarea></label>
+        <label class="edit-field sm:col-span-2">Skills (Comma-separated)<input name="skills" placeholder="React, Node.js, TypeScript, PostgreSQL"></label>
+        <label class="edit-field sm:col-span-2">GitHub Profile URL<input name="github" type="url" placeholder="https://github.com/username"></label>
         <p id="editError" class="hidden text-[11px] font-semibold text-rose-700 sm:col-span-2" role="alert"></p>
       </div>
-      <div class="flex justify-end gap-2 border-t border-line px-5 py-4 sm:px-6"><button type="button" onclick="closeEditIntern()" class="cancel-button">Cancel</button><button id="saveInternButton" type="submit" class="action-button">Save changes</button></div>
+
+      <div class="flex justify-end gap-2 border-t border-line px-6 py-4 bg-[#faf8ff]">
+        <button type="button" onclick="closeEditIntern()" class="cancel-button">Cancel</button>
+        <button id="saveInternButton" type="submit" class="action-button">Save Changes</button>
+      </div>
     </form>
   </dialog>
 
-  <dialog id="studentQrDialog" class="edit-dialog w-[min(520px,calc(100%-24px))] rounded-2xl border border-line bg-white p-0 text-ink shadow-2xl backdrop:bg-ink/40">
-    <div class="flex items-start justify-between border-b border-line px-5 py-4 sm:px-6">
+  <!-- QUICK PROFILE QR MODAL -->
+  <dialog id="studentQrDialog" class="edit-dialog w-[min(500px,calc(100%-24px))] rounded-2xl border border-line bg-white p-0 text-ink shadow-2xl">
+    <div class="flex items-start justify-between border-b border-line px-6 py-4 bg-[#faf8ff]">
       <div>
-        <h2 class="text-[17px] font-extrabold flex items-center gap-2">
+        <h2 class="text-[17px] font-extrabold flex items-center gap-2 text-ink">
           <i data-lucide="qr-code" class="h-4 w-4 text-moss"></i>
           <span>Student Profile QR Code</span>
         </h2>
-        <p class="mt-0.5 text-[11px] text-muted">Scan to open this student's individual verified portfolio.</p>
+        <p class="mt-0.5 text-[11px] text-muted">Scan to open individual verified public portfolio.</p>
       </div>
-      <button type="button" onclick="closeStudentQrDialog()" class="icon-button" aria-label="Close QR dialog"><i data-lucide="x" class="h-4 w-4"></i></button>
+      <button type="button" onclick="closeStudentQrDialog()" class="icon-button" aria-label="Close dialog"><i data-lucide="x" class="h-4 w-4"></i></button>
     </div>
 
-    <div class="p-5 sm:p-6 space-y-4">
-      <!-- Intern Mini Card -->
+    <div class="p-6 space-y-4">
       <div class="flex items-center gap-3.5 rounded-xl bg-[#faf8ff] p-3.5 border border-line">
         <img id="qrModalPhoto" src="" alt="" class="hidden h-12 w-12 rounded-xl object-cover ring-1 ring-line">
         <div id="qrModalInitials" class="grid h-12 w-12 place-items-center rounded-xl bg-[#ede9fe] font-bold text-moss text-[14px]"></div>
@@ -226,602 +643,671 @@
         </div>
       </div>
 
-      <!-- QR Code Display Box -->
       <div class="flex flex-col items-center justify-center rounded-2xl bg-white p-6 border-2 border-dashed border-[#ddd6fe]">
-        <div id="modalQrCode" class="rounded-xl bg-white p-3 shadow-md border border-line"></div>
+        <div id="modalQrCode" class="rounded-xl bg-white p-3 shadow-sm border border-line"></div>
         <span id="modalQrUrl" class="hidden"></span>
       </div>
 
-      <!-- Network / Host Switcher for Mobile Phone Scanning -->
-      <div class="rounded-xl bg-[#faf8ff] p-3 border border-[#ddd6fe] flex items-center justify-between gap-2 text-[11px]">
-        <div>
-          <span class="font-bold text-ink block">Mobile Phone Scanning</span>
-          <span class="text-muted text-[10px]" id="qrModalHostDesc">Using browser address</span>
-        </div>
-        <button type="button" id="toggleLanBtn" onclick="toggleQrHostMode()" class="rounded-lg bg-white border border-[#ddd6fe] px-2.5 py-1 font-bold text-moss text-[10px] hover:bg-[#f5f3ff] transition shrink-0">
-          Switch to Wi-Fi IP
-        </button>
-      </div>
-
-      <!-- Action buttons -->
       <div class="grid grid-cols-2 gap-2 pt-1 sm:grid-cols-3">
         <button type="button" onclick="copyModalQrLink()" class="rounded-lg border border-line bg-white px-3 py-2 text-[11px] font-bold text-ink hover:bg-[#f5f3ff] inline-flex items-center justify-center gap-1.5 transition">
           <i data-lucide="copy" class="h-3.5 w-3.5 text-moss"></i>
-          <span>Copy link</span>
+          <span>Copy URL</span>
         </button>
-        <button type="button" onclick="downloadModalQrCode()" class="rounded-lg bg-moss px-3 py-2 text-[11px] font-bold text-white hover:bg-[#6d28d9] inline-flex items-center justify-center gap-1.5 transition">
+        <button type="button" onclick="downloadModalQrCode()" class="rounded-lg bg-moss px-3 py-2 text-[11px] font-bold text-white hover:bg-mossDark inline-flex items-center justify-center gap-1.5 transition">
           <i data-lucide="download" class="h-3.5 w-3.5"></i>
-          <span>Download QR</span>
+          <span>Download PNG</span>
         </button>
         <button type="button" onclick="openModalProfileTab()" class="col-span-2 sm:col-span-1 rounded-lg border border-line bg-white px-3 py-2 text-[11px] font-bold text-moss hover:bg-[#f5f3ff] inline-flex items-center justify-center gap-1.5 transition">
           <i data-lucide="external-link" class="h-3.5 w-3.5"></i>
-          <span>Open portfolio</span>
+          <span>Open Portfolio</span>
         </button>
       </div>
     </div>
   </dialog>
 
-  <style>
-    .nav-link { flex: 0 0 auto; border: 1px solid transparent; border-radius: 8px; padding: 9px 12px; color: #7c749b; transition: color .15s, background .15s; }
-    .no-scrollbar { scrollbar-width: none; }
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .nav-link:hover { color: #1e1b4b; background: #f5f3ff; }
-    .nav-link.active { color: #7c3aed; border-color: #ddd6fe; background: #ede9fe; }
-    .metric { min-width: 0; border: 1px solid #e9d5ff; border-radius: 10px; background: white; padding: 14px 13px; box-shadow: 0 1px 3px 0 rgba(124, 58, 237, 0.04); }
-    .metric span { display: block; color: #7c749b; font-size: 9px; font-weight: 700; letter-spacing: .07em; line-height: 1.45; text-transform: uppercase; }
-    .metric strong { display: block; margin-top: 10px; font-size: 25px; font-weight: 800; line-height: 1; letter-spacing: -.03em; }
-    .metric small { display: block; margin-top: 8px; color: #7c749b; font-size: 9px; font-weight: 500; line-height: 1.4; }
-    .panel { min-width: 0; border: 1px solid #e9d5ff; border-radius: 11px; background: white; padding: 18px; box-shadow: 0 1px 3px 0 rgba(124, 58, 237, 0.04); }
-    .panel-icon { display: grid; height: 32px; width: 32px; place-items: center; border-radius: 8px; background: #ede9fe; color: #7c3aed; }
-    .panel-icon svg { height: 16px; width: 16px; }
-    .field { border: 1px solid #ddd6fe; border-radius: 8px; background: white; padding: 9px 11px; color: #1e1b4b; font-size: 11px; outline: none; }
-    .field:focus { border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15); }
-    .action-button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; border-radius: 8px; background: #7c3aed; padding: 10px 13px; color: white; font-size: 11px; font-weight: 700; transition: background .15s; }
-    .action-button:hover { background: #6d28d9; }
-    .score-field { display: grid; grid-template-columns: 1fr auto; gap: 7px 10px; color: #2e1065; font-size: 11px; font-weight: 600; }
-    .score-field span { color: #7c749b; font-family: 'DM Mono', monospace; font-size: 10px; }
-    .score-field input { grid-column: 1 / -1; width: 100%; border: 1px solid #ddd6fe; border-radius: 8px; background: white; padding: 10px; color: #1e1b4b; outline: none; }
-    .score-field input:focus { border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15); }
-    .edit-dialog::backdrop { background: rgb(30 27 75 / 45%); }
-    .edit-field { display: grid; gap: 6px; color: #2e1065; font-size: 11px; font-weight: 600; }
-    .edit-field input, .edit-field select, .edit-field textarea { width: 100%; border: 1px solid #ddd6fe; border-radius: 8px; background: white; padding: 9px 10px; color: #1e1b4b; font: 400 11px 'DM Sans', sans-serif; outline: none; }
-    .edit-field input:focus, .edit-field select:focus, .edit-field textarea:focus { border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15); }
-    .edit-field input[readonly] { background: #faf8ff; color: #7c749b; }
-    .edit-field input[type="file"] { padding: 7px; }
-    .icon-button { display: grid; height: 30px; width: 30px; place-items: center; border-radius: 7px; color: #7c749b; }
-    .icon-button:hover, .cancel-button:hover { background: #f5f3ff; color: #1e1b4b; }
-    .cancel-button { border-radius: 8px; padding: 9px 13px; color: #5b4a78; font-size: 11px; font-weight: 700; }
-    .public-profile-view .site-nav, .public-profile-view .admin-label, .public-profile-view .portfolio-admin-controls { display: none !important; }
-    @media (max-width: 640px) {
-      .site-header-inner { flex-wrap: wrap; height: auto !important; gap: 0 8px; padding-top: 8px; }
-      .site-nav { order: 3; flex: 0 0 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); overflow: visible; padding: 2px 0 8px; }
-      .site-nav .nav-link { min-width: 0; padding: 8px 4px; text-align: center; font-size: 10px; }
-    }
-  </style>
+  <!-- QUICK ATTENDANCE DIALOG -->
+  <dialog id="attendanceDialog" class="edit-dialog w-[min(420px,calc(100%-24px))] rounded-2xl border border-line bg-white p-0 text-ink shadow-2xl">
+    <div class="flex items-start justify-between border-b border-line px-6 py-4 bg-[#faf8ff]">
+      <div>
+        <h2 class="text-[16px] font-extrabold text-ink">Update Attendance</h2>
+        <p id="attendanceDialogMeta" class="mt-0.5 text-[11px] text-muted"></p>
+      </div>
+      <button type="button" onclick="document.getElementById('attendanceDialog').close()" class="icon-button"><i data-lucide="x" class="h-4 w-4"></i></button>
+    </div>
+    <div class="p-6 space-y-4">
+      <div class="flex items-center justify-between">
+        <label class="text-[12px] font-bold text-ink">Completed Days:</label>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="adjustAttendance(-1)" class="icon-button border border-line rounded-lg font-bold text-lg">-</button>
+          <input type="number" id="quickDaysInput" class="field w-20 text-center font-mono font-bold text-base" min="0">
+          <button type="button" onclick="adjustAttendance(1)" class="icon-button border border-line rounded-lg font-bold text-lg">+</button>
+        </div>
+      </div>
+      <div class="flex items-center justify-between text-[11px] text-muted">
+        <span>Total Required: <strong id="quickTotalText" class="font-bold text-ink">90</strong> days</span>
+        <span id="quickPercentageText" class="font-bold text-moss">0%</span>
+      </div>
+      <div class="h-2 w-full bg-[#ede9fe] rounded-full overflow-hidden">
+        <div id="quickAttendanceProgressBar" class="h-full bg-moss rounded-full transition-all" style="width: 0%;"></div>
+      </div>
+      <div class="pt-2 flex justify-end gap-2 border-t border-line">
+        <button type="button" onclick="document.getElementById('attendanceDialog').close()" class="cancel-button">Cancel</button>
+        <button type="button" onclick="saveQuickAttendance()" class="action-button">Save Attendance</button>
+      </div>
+    </div>
+  </dialog>
 
   <script>
     const rubricCategories = [
-      { key: 'technical', inputId: 's_tech', weight: .25 },
-      { key: 'projectQuality', inputId: 's_qual', weight: .25 },
-      { key: 'problemSolving', inputId: 's_prob', weight: .20 },
-      { key: 'taskCompletion', inputId: 's_task', weight: .15 },
-      { key: 'communication', inputId: 's_comm', weight: .10 },
-      { key: 'teamwork', inputId: 's_team', weight: .05 }
+      { key: 'technical', inputId: 's_tech', label: 'Technical Skills', weight: 0.25 },
+      { key: 'projectQuality', inputId: 's_qual', label: 'Project Quality', weight: 0.25 },
+      { key: 'problemSolving', inputId: 's_prob', label: 'Problem Solving', weight: 0.20 },
+      { key: 'taskCompletion', inputId: 's_task', label: 'Task Completion', weight: 0.15 },
+      { key: 'communication', inputId: 's_comm', label: 'Communication', weight: 0.10 },
+      { key: 'teamwork', inputId: 's_team', label: 'Teamwork', weight: 0.05 }
     ];
-    const defaultInterns = [
-      { id: 'PSM-INT-2026-0001', name: 'Aarav Sharma', college: 'IIT Madras', domain: 'Full Stack Web', role: 'Full Stack Developer Intern', days: 48, total: 90, score: 94.5, grade: 'A+', status: 'ACTIVE', project: 'PSM TalentPulse - AI Candidate Match Engine', description: 'Engineered an intelligent internship applicant parsing and technical assessment pipeline using React, Node.js, and vector embeddings.', skills: ['React', 'TypeScript', 'Node.js', 'PostgreSQL'], photo: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&auto=format&fit=crop&q=80' },
-      { id: 'PSM-INT-2026-0002', name: 'Ananya Iyer', college: 'NIT Trichy', domain: 'Artificial Intelligence', role: 'Computer Vision Intern', days: 52, total: 90, score: 88.0, grade: 'A', status: 'ACTIVE', project: 'Visual Quality Inspection', description: 'Built a computer vision workflow to identify product defects and organize model evaluation results for review.', skills: ['Python', 'PyTorch', 'OpenCV', 'FastAPI'], photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80' },
-      { id: 'PSM-INT-2026-0003', name: 'Rohan Verma', college: 'BITS Pilani', domain: 'Cloud & DevOps', role: 'DevOps Engineer Intern', days: 38, total: 90, score: 76.5, grade: 'B', status: 'ACTIVE', project: 'Cloud Deployment Toolkit', description: 'Created repeatable deployment workflows and service health checks for a containerized development environment.', skills: ['Docker', 'AWS', 'GitHub Actions', 'Linux'], photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&auto=format&fit=crop&q=80' },
-      { id: 'PSM-INT-2026-0004', name: 'Sneha Patel', college: 'VIT Vellore', domain: 'Cybersecurity', role: 'Security Analyst Intern', days: 45, total: 90, score: 92.0, grade: 'A+', status: 'ACTIVE', project: 'Application Security Review', description: 'Designed a structured application security review process and documented remediation priorities for engineering teams.', skills: ['OWASP', 'Burp Suite', 'Python', 'Linux'], photo: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&auto=format&fit=crop&q=80' },
-      { id: 'PSM-INT-2026-0005', name: 'Karthik Sundaram', college: 'Anna University', domain: 'Mobile App Dev', role: 'Mobile Engineer Intern', days: 90, total: 90, score: 96.0, grade: 'A+', status: 'COMPLETED', project: 'Campus Connect Mobile', description: 'Shipped a cross-platform campus app with event discovery, accessible navigation, and a clear onboarding flow.', skills: ['Flutter', 'Dart', 'Firebase', 'Figma'], photo: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&auto=format&fit=crop&q=80' },
-      { id: 'PSM-INT-2026-0006', name: 'M Senthilnathan', college: 'Takshashila University', domain: 'Data Science', role: 'Team Leader', days: 90, total: 90, score: 98.0, grade: 'A+', status: 'ACTIVE', project: 'InternHub', description: 'Converting students data into meaningful information', skills: ['Python', 'Java', 'C++'], photo: '', github: '' }
-    ];
-    let interns = loadSavedInterns();
-    let selectedInternId = interns[0]?.id ?? null;
-    let datasetReady = false;
+
+    let interns = [];
+    let selectedInternId = null;
     let isCreatingIntern = false;
-    let portfolioQrCode;
-    let idQrCode;
-    let dashboardDomainChart;
-    let dashboardGradeChart;
-    let qrRenderGeneration = 0;
-    let networkInfo = null;
-    let qrHostMode = 'origin';
+    let dashboardDomainChart = null;
+    let dashboardGradeChart = null;
     let activeModalIntern = null;
+    let activeAttendanceIntern = null;
 
-    function loadSavedInterns() {
-      try {
-        const saved = localStorage.getItem('psm-internhub-interns');
-        const parsed = saved ? JSON.parse(saved) : null;
-        if (Array.isArray(parsed)) {
-          const normalized = parsed.map(normalizeInternRecord).filter(Boolean);
-          if (normalized.length === parsed.length && new Set(normalized.map(intern => intern.id)).size === normalized.length) return normalized;
-        }
-      } catch (error) {
-        console.warn('Saved intern data could not be loaded.', error);
-      }
-      return defaultInterns.map(intern => normalizeInternRecord({ ...intern, skills: [...intern.skills] }));
-    }
-
-    async function persistInterns(records, allowInitialLoad = false) {
-      if (!datasetReady && !allowInitialLoad) return false;
-      const isStaticHost = window.location.hostname.includes('github.io') || window.location.protocol === 'file:';
-      if (!isStaticHost) {
-        try {
-          const response = await fetch('/api/interns', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ students: records })
-          });
-          if (response.ok) {
-            const result = await response.json();
-            if (Array.isArray(result.students)) {
-              try {
-                localStorage.setItem('psm-internhub-interns', JSON.stringify(result.students));
-              } catch (error) {
-                console.warn('The local dataset cache could not be updated; the server copy was saved.', error);
-              }
-              datasetReady = true;
-              document.getElementById('datasetError').classList.add('hidden');
-              return true;
-            }
-          }
-        } catch (error) {
-          // Continue to localStorage fallback
-        }
-      }
-
-      try {
-        localStorage.setItem('psm-internhub-interns', JSON.stringify(records));
-        datasetReady = true;
-        document.getElementById('datasetError').classList.add('hidden');
-        return true;
-      } catch (error) {
-        console.error('Student data could not be saved.', error);
-        document.getElementById('datasetError').textContent = `The dataset could not be saved. ${error.message}`;
-        document.getElementById('datasetError').classList.remove('hidden');
-        return false;
-      }
-    }
-
-    async function loadPersistentDataset() {
-      const isStaticHost = window.location.hostname.includes('github.io') || window.location.protocol === 'file:';
-
-      // 1. Try server backend API (/api/interns) if not on static host
-      if (!isStaticHost) {
-        try {
-          const response = await fetch('/api/interns', { cache: 'no-store' });
-          if (response.ok) {
-            const result = await response.json();
-            if (result.students === null) {
-              const initialRecords = loadSavedInterns();
-              if (!await persistInterns(initialRecords, true)) throw new Error('Could not initialize the permanent dataset.');
-              interns = initialRecords;
-            } else {
-              if (!Array.isArray(result.students)) throw new Error('The server returned an invalid dataset.');
-              const normalized = result.students.map(normalizeInternRecord).filter(Boolean);
-              if (normalized.length !== result.students.length || new Set(normalized.map(intern => intern.id)).size !== normalized.length) {
-                throw new Error('The server dataset contains invalid or duplicate intern records.');
-              }
-              interns = normalized;
-            }
-            datasetReady = true;
-            try {
-              localStorage.setItem('psm-internhub-interns', JSON.stringify(interns));
-            } catch (e) {}
-            selectedInternId = interns.some(intern => intern.id === selectedInternId) ? selectedInternId : (interns[0]?.id ?? null);
-            return;
-          }
-        } catch (apiErr) {
-          // Backend API is not available
-        }
-      }
-
-      // 2. Fetch latest seed data relative to current location
-      try {
-        const seedUrl = new URL('data/seed-interns.json', window.location.href).href;
-        const staticResponse = await fetch(seedUrl, { cache: 'no-store' });
-        if (staticResponse.ok) {
-          const seedData = await staticResponse.json();
-          if (Array.isArray(seedData.students)) {
-            const normalized = seedData.students.map(normalizeInternRecord).filter(Boolean);
-            if (normalized.length > 0) {
-              interns = normalized;
-              datasetReady = true;
-              try {
-                localStorage.setItem('psm-internhub-interns', JSON.stringify(interns));
-              } catch (e) {}
-              selectedInternId = interns.some(intern => intern.id === selectedInternId) ? selectedInternId : (interns[0]?.id ?? null);
-              return;
-            }
-          }
-        }
-      } catch (staticErr) {}
-
-      // 3. Fallback to localStorage if seed fetch failed
-      try {
-        const saved = localStorage.getItem('psm-internhub-interns');
-        const parsed = saved ? JSON.parse(saved) : null;
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const normalized = parsed.map(normalizeInternRecord).filter(Boolean);
-          if (normalized.length === parsed.length && new Set(normalized.map(i => i.id)).size === normalized.length) {
-            interns = normalized;
-            datasetReady = true;
-            selectedInternId = interns.some(intern => intern.id === selectedInternId) ? selectedInternId : (interns[0]?.id ?? null);
-            return;
-          }
-        }
-      } catch (lsErr) {}
-
-      // 4. Default fallback
-      interns = defaultInterns.map(intern => normalizeInternRecord({ ...intern, skills: [...intern.skills] }));
-      datasetReady = true;
-      selectedInternId = interns.some(intern => intern.id === selectedInternId) ? selectedInternId : (interns[0]?.id ?? null);
-    }
-
-    function normalizeInternRecord(intern) {
-      if (!intern || typeof intern !== 'object') return null;
-      const normalized = {
-        ...intern,
-        id: typeof intern.id === 'string' ? intern.id.trim() : '',
-        name: typeof intern.name === 'string' ? intern.name.trim() : '',
-        college: typeof intern.college === 'string' ? intern.college.trim() : '',
-        domain: typeof intern.domain === 'string' ? intern.domain.trim() : '',
-        role: typeof intern.role === 'string' ? intern.role.trim() : '',
-        status: typeof intern.status === 'string' && intern.status.trim() ? intern.status.trim() : 'ACTIVE',
-        mentorName: typeof intern.mentorName === 'string' ? intern.mentorName.trim().slice(0, 100) : '',
-        mentorId: typeof intern.mentorId === 'string' ? intern.mentorId.trim().slice(0, 100) : '',
-        mentorReview: typeof intern.mentorReview === 'string' ? intern.mentorReview.slice(0, 2000) : '',
-        evaluation: typeof intern.evaluation === 'string' ? intern.evaluation.slice(0, 2000) : '',
-        project: typeof intern.project === 'string' ? intern.project.trim() : '',
-        description: typeof intern.description === 'string' ? intern.description.trim() : '',
-        photo: typeof intern.photo === 'string' ? intern.photo.trim() : '',
-        qrImage: typeof intern.qrImage === 'string' ? intern.qrImage.trim() : '',
-        github: typeof intern.github === 'string' ? intern.github.trim() : '',
-        days: Number(intern.days),
-        total: Number(intern.total),
-        score: Number(intern.score),
-        skills: Array.isArray(intern.skills) ? intern.skills.map(skill => typeof skill === 'string' ? skill.trim() : '').filter(Boolean) : []
-      };
-      if (!normalized.id || !normalized.name || !normalized.college || !normalized.domain || !normalized.role) return null;
-      if (!Number.isFinite(normalized.days) || !Number.isFinite(normalized.total) || !Number.isFinite(normalized.score)) return null;
-      if (normalized.days < 0 || normalized.total < 1 || normalized.days > normalized.total || normalized.score < 0 || normalized.score > 100) return null;
-      normalized.marks = Object.fromEntries(rubricCategories.map(({ key }) => {
-        const mark = Number(intern.marks?.[key] ?? normalized.score);
-        return [key, Number.isFinite(mark) && mark >= 0 && mark <= 100 ? mark : normalized.score];
-      }));
-      normalized.grade = typeof intern.grade === 'string' && intern.grade.trim() ? intern.grade.trim() : gradeForScore(normalized.score);
-      return normalized;
-    }
-
-    function isValidInternRecord(intern) {
-      return Boolean(normalizeInternRecord(intern));
-    }
-
-    function exportInterns() {
-      const backup = { format: 'psm-internhub-backup', version: 1, exportedAt: new Date().toISOString(), students: interns };
-      const url = URL.createObjectURL(new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' }));
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `internhub-students-${new Date().toISOString().slice(0, 10)}.json`;
-      link.click();
-      URL.revokeObjectURL(url);
-    }
-
-    async function importInterns(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      try {
-        const backup = JSON.parse(await file.text());
-        const records = Array.isArray(backup) ? backup : backup.students;
-        const normalized = Array.isArray(records) ? records.map(normalizeInternRecord).filter(Boolean) : [];
-        if (!Array.isArray(records) || records.length !== normalized.length || new Set(normalized.map(intern => intern.id)).size !== normalized.length) {
-          throw new Error('The file is not a valid InternHub student backup.');
-        }
-        if (!window.confirm(`Replace the current ${interns.length} student records with ${normalized.length} records from this backup?`)) return;
-        if (!await persistInterns(normalized)) throw new Error('Unable to save the imported data to the permanent dataset.');
-        interns = normalized;
-        selectedInternId = interns[0]?.id ?? null;
-        renderInterns(interns);
-        setSelectOptions();
-        selectIntern(selectedInternId);
-      } catch (error) {
-        window.alert(error.message || 'Could not read this backup file.');
-      } finally {
-        event.target.value = '';
-      }
-    }
-
-    function escapeHtml(value) {
-      return String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
+    function showAlert(message, isError = false) {
+      const alertBox = document.getElementById('datasetAlert');
+      const alertText = document.getElementById('datasetAlertText');
+      alertText.textContent = message;
+      alertBox.className = isError
+        ? 'mb-5 rounded-xl border border-rose-200 bg-rose-50 p-4 text-[12px] text-rose-800 flex items-center justify-between gap-3'
+        : 'mb-5 rounded-xl border border-purple-200 bg-purple-50 p-4 text-[12px] text-purple-900 flex items-center justify-between gap-3';
+      alertBox.classList.remove('hidden');
     }
 
     function gradeForScore(score) {
-      return score >= 90 ? 'A+' : score >= 80 ? 'A' : score >= 70 ? 'B' : score >= 60 ? 'C' : score >= 50 ? 'D' : 'E';
+      if (score >= 90) return 'A+';
+      if (score >= 80) return 'A';
+      if (score >= 70) return 'B';
+      if (score >= 60) return 'C';
+      if (score >= 50) return 'D';
+      return 'E';
     }
 
-    async function fetchNetworkInfo() {
-      if (window.location.hostname.includes('github.io') || window.location.protocol === 'file:') return;
+    function gradeDescription(grade) {
+      return ({ 'A+': 'Outstanding', A: 'Excellent', B: 'Very Good', C: 'Good', D: 'Satisfactory', E: 'Needs Improvement' })[grade] || '';
+    }
+
+    function weightedScore(marks) {
+      const total = rubricCategories.reduce((sum, { key, weight }) => sum + (Number(marks[key] ?? 0) * weight), 0);
+      return Math.round(total * 10) / 10;
+    }
+
+    function readMarkValues(readValue) {
+      const marks = {};
+      for (const { key } of rubricCategories) {
+        const val = Number(readValue(key));
+        if (!Number.isFinite(val) || val < 0 || val > 100) return null;
+        marks[key] = val;
+      }
+      return marks;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+    }
+
+    // Load Live Interns from API
+    async function loadDataset() {
       try {
-        const response = await fetch('/api/network-info', { cache: 'no-store' });
-        if (response.ok) {
-          networkInfo = await response.json();
-          updateQrHostLabels();
+        const response = await fetch('/api/interns', { cache: 'no-store' });
+        if (response.status === 401) {
+          window.location.href = '/login';
+          return;
         }
-      } catch (error) {
-        console.warn('Network info could not be fetched:', error);
+        if (response.ok) {
+          const data = await response.json();
+          interns = Array.isArray(data.students) ? data.students : [];
+          if (!selectedInternId && interns.length > 0) {
+            selectedInternId = interns[0].id;
+          }
+          renderAll();
+          return;
+        }
+      } catch (err) {
+        console.warn('Backend load failed, checking fallback:', err);
+      }
+
+      // Offline / Static fallback
+      try {
+        const seedRes = await fetch('data/seed-interns.json');
+        if (seedRes.ok) {
+          const data = await seedRes.json();
+          interns = Array.isArray(data.students) ? data.students : [];
+          renderAll();
+          showAlert('Operating in offline mode with cached dataset.');
+        }
+      } catch (e) {
+        showAlert('Could not load student records.', true);
       }
     }
 
-    function getEffectiveBaseUrl() {
-      if (qrHostMode === 'lan' && networkInfo && networkInfo.localIp) {
-        return `http://${networkInfo.localIp}:${networkInfo.port || 3000}`;
+    function renderAll() {
+      renderExecutiveOverview();
+      renderDomainFilterOptions();
+      filterStudents();
+      setSelectOptions();
+      if (selectedInternId) selectIntern(selectedInternId);
+      initCharts();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function renderDomainFilterOptions() {
+      const select = document.getElementById('domainFilter');
+      const domains = [...new Set(interns.map(i => i.domain).filter(Boolean))].sort();
+      const current = select.value;
+      select.innerHTML = '<option value="">All Domains</option>' + domains.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+      select.value = current;
+    }
+
+    function renderExecutiveOverview() {
+      const total = interns.length;
+      const active = interns.filter(i => i.status === 'ACTIVE').length;
+      const certified = interns.filter(i => Number(i.score) >= 75 || i.status === 'COMPLETED').length;
+      const avgPerformance = total ? (interns.reduce((sum, i) => sum + Number(i.score || 0), 0) / total) : 0;
+      const avgAttendance = total ? (interns.reduce((sum, i) => sum + ((Number(i.days || 0) / Math.max(Number(i.total || 90), 1)) * 100), 0) / total) : 0;
+      const pendingReviews = interns.filter(i => !i.mentorReview?.trim()).length;
+      const activeMentors = new Set(interns.filter(i => i.mentorName || i.mentorId).map(i => i.mentorId || i.mentorName.toLowerCase())).size;
+
+      document.getElementById('metricTotalInterns').textContent = total;
+      document.getElementById('metricTotalMeta').textContent = `${total} cohort record${total === 1 ? '' : 's'}`;
+      document.getElementById('metricActiveInterns').textContent = active;
+      document.getElementById('metricCertifiedInterns').textContent = certified;
+      document.getElementById('metricProjects').textContent = total;
+      document.getElementById('metricAvgPerformance').textContent = avgPerformance.toFixed(1);
+      document.getElementById('metricAvgPerformanceMeta').textContent = `Grade ${gradeForScore(avgPerformance)} (${gradeDescription(gradeForScore(avgPerformance))})`;
+      document.getElementById('metricAvgAttendance').textContent = `${avgAttendance.toFixed(1)}%`;
+      document.getElementById('metricActiveMentors').textContent = activeMentors;
+      document.getElementById('metricPendingReviews').textContent = pendingReviews;
+
+      // Top Performers List (Top 3)
+      const topSorted = [...interns].sort((a, b) => Number(b.score || 0) - Number(a.score || 0)).slice(0, 3);
+      const listEl = document.getElementById('topPerformersList');
+      if (topSorted.length === 0) {
+        listEl.innerHTML = '<p class="py-4 text-center text-[12px] text-muted">No intern records loaded yet.</p>';
+      } else {
+        listEl.innerHTML = topSorted.map((intern, idx) => `
+          <div class="flex items-center justify-between py-3 cursor-pointer hover:bg-[#faf8ff] px-2 rounded-lg transition" onclick="selectIntern('${escapeHtml(intern.id)}'); switchTab('public-portfolio');">
+            <div class="flex items-center gap-3">
+              <span class="grid h-6 w-6 place-items-center rounded-full bg-[#ede9fe] text-moss font-bold text-[11px]">#${idx + 1}</span>
+              <div>
+                <strong class="text-[13px] font-bold text-ink">${escapeHtml(intern.name)}</strong>
+                <p class="text-[10px] text-muted">${escapeHtml(intern.role)} · ${escapeHtml(intern.domain)}</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="font-mono text-[14px] font-bold text-ink">${Number(intern.score).toFixed(1)}%</span>
+              <span class="ml-1.5 rounded-full bg-[#ede9fe] text-moss px-2 py-0.5 text-[9px] font-bold">${escapeHtml(intern.grade || gradeForScore(intern.score))}</span>
+            </div>
+          </div>
+        `).join('');
       }
-      return window.location.origin;
+    }
+
+    function initCharts() {
+      if (!window.Chart) return;
+      Chart.defaults.font.family = "'DM Sans', sans-serif";
+      Chart.defaults.color = '#7c749b';
+
+      if (dashboardDomainChart) dashboardDomainChart.destroy();
+      if (dashboardGradeChart) dashboardGradeChart.destroy();
+
+      const domainCounts = {};
+      interns.forEach(i => {
+        const d = i.domain || 'Unassigned';
+        domainCounts[d] = (domainCounts[d] || 0) + 1;
+      });
+      const domainLabels = Object.keys(domainCounts);
+      const domainData = Object.values(domainCounts);
+      const domainColors = ['#7c3aed', '#8b5cf6', '#a78bfa', '#c084fc', '#9333ea', '#6366f1', '#4f46e5', '#3b82f6'];
+
+      const gradeCounts = { 'A+': 0, 'A': 0, 'B': 0, 'C': 0, 'D': 0, 'E': 0 };
+      interns.forEach(i => {
+        const g = i.grade || gradeForScore(Number(i.score || 0));
+        if (gradeCounts[g] !== undefined) gradeCounts[g]++;
+      });
+      const gradeLabels = ['A+ Outstanding', 'A Excellent', 'B Very Good', 'C Good', 'D Satisfactory', 'E Improvement'];
+      const gradeData = ['A+', 'A', 'B', 'C', 'D', 'E'].map(k => gradeCounts[k]);
+
+      const barCtx = document.getElementById('domainChart')?.getContext('2d');
+      if (barCtx) {
+        dashboardDomainChart = new Chart(barCtx, {
+          type: 'bar',
+          data: {
+            labels: domainLabels.length ? domainLabels : ['No Data'],
+            datasets: [{
+              data: domainData.length ? domainData : [0],
+              backgroundColor: domainColors,
+              borderRadius: 6,
+              maxBarThickness: 32
+            }]
+          },
+          options: {
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { display: false }, border: { display: false } },
+              y: { beginAtZero: true, grid: { color: '#f3e8ff' }, border: { display: false }, ticks: { stepSize: 1 } }
+            }
+          }
+        });
+      }
+
+      const pieCtx = document.getElementById('gradeChart')?.getContext('2d');
+      if (pieCtx) {
+        dashboardGradeChart = new Chart(pieCtx, {
+          type: 'doughnut',
+          data: {
+            labels: gradeLabels,
+            datasets: [{
+              data: gradeData,
+              backgroundColor: ['#7c3aed', '#8b5cf6', '#a78bfa', '#c084fc', '#d8b4fe', '#cbd5e1'],
+              borderWidth: 3,
+              borderColor: '#ffffff',
+              hoverOffset: 4
+            }]
+          },
+          options: {
+            maintainAspectRatio: false,
+            cutout: '68%',
+            plugins: {
+              legend: {
+                position: 'right',
+                labels: { usePointStyle: true, pointStyle: 'circle', boxWidth: 7, padding: 14, font: { size: 10 } }
+              }
+            }
+          }
+        });
+      }
+    }
+
+    function filterStudents() {
+      const search = document.getElementById('studentSearch').value.trim().toLowerCase();
+      const domain = document.getElementById('domainFilter').value;
+      const status = document.getElementById('statusFilter').value;
+      const sort = document.getElementById('sortFilter').value;
+
+      let filtered = interns.filter(i => {
+        const matchesSearch = !search || [i.name, i.id, i.college, i.domain, i.role, i.mentorName, i.mentorId]
+          .some(v => String(v || '').toLowerCase().includes(search));
+        const matchesDomain = !domain || i.domain === domain;
+        const matchesStatus = !status || i.status === status;
+        return matchesSearch && matchesDomain && matchesStatus;
+      });
+
+      // Sorting
+      filtered.sort((a, b) => {
+        if (sort === 'name_asc') return (a.name || '').localeCompare(b.name || '');
+        if (sort === 'name_desc') return (b.name || '').localeCompare(a.name || '');
+        if (sort === 'score_desc') return Number(b.score || 0) - Number(a.score || 0);
+        if (sort === 'score_asc') return Number(a.score || 0) - Number(b.score || 0);
+        if (sort === 'days_desc') return Number(b.days || 0) - Number(a.days || 0);
+        return 0;
+      });
+
+      renderInternRows(filtered);
+    }
+
+    function renderInternRows(list) {
+      const tbody = document.getElementById('internRows');
+      const emptyState = document.getElementById('emptyState');
+      document.getElementById('resultCount').textContent = list.length;
+
+      if (list.length === 0) {
+        tbody.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      emptyState.classList.add('hidden');
+
+      tbody.innerHTML = list.map(intern => {
+        const days = Number(intern.days || 0);
+        const total = Math.max(Number(intern.total || 90), 1);
+        const pct = Math.min(Math.round((days / total) * 100), 100);
+
+        return `
+          <tr class="transition-colors hover:bg-[#faf8ff]">
+            <td class="px-4 py-3.5">
+              <div class="flex items-center gap-2">
+                <strong>${escapeHtml(intern.name)}</strong>
+                ${intern.github ? `<a href="${escapeHtml(intern.github)}" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-moss" title="GitHub"><i data-lucide="github" class="h-3 w-3"></i></a>` : ''}
+              </div>
+              <p class="font-mono text-[10px] font-semibold text-moss mt-0.5">${escapeHtml(intern.id)}</p>
+            </td>
+            <td class="px-4 py-3.5">
+              <p class="font-semibold text-ink">${escapeHtml(intern.college)}</p>
+              <p class="text-[10px] text-muted mt-0.5">${escapeHtml(intern.domain)}</p>
+            </td>
+            <td class="px-4 py-3.5">${escapeHtml(intern.role)}</td>
+            <td class="px-4 py-3.5">
+              <p class="font-semibold text-ink">${escapeHtml(intern.mentorName || 'Unassigned')}</p>
+              <p class="font-mono text-[10px] text-muted">${escapeHtml(intern.mentorId || '')}</p>
+            </td>
+            <td class="px-4 py-3.5 text-center">
+              <button type="button" onclick="openQuickAttendance('${escapeHtml(intern.id)}')" class="inline-flex items-center gap-1 font-mono hover:text-moss transition" title="Click to update attendance">
+                <span>${days} / ${total}</span>
+                <span class="text-[10px] text-muted">(${pct}%)</span>
+                <i data-lucide="edit-2" class="h-2.5 w-2.5 text-muted"></i>
+              </button>
+            </td>
+            <td class="px-4 py-3.5 text-center">
+              <span class="font-mono font-bold">${Number(intern.score).toFixed(1)}</span>
+              <span class="ml-1.5 rounded-full bg-[#ede9fe] px-1.5 py-0.5 text-[9px] font-bold text-moss">${escapeHtml(intern.grade || gradeForScore(intern.score))}</span>
+            </td>
+            <td class="px-4 py-3.5 text-center">
+              <span class="rounded-full ${intern.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-800' : 'bg-[#ede9fe] text-moss'} px-2 py-0.5 text-[9px] font-bold">
+                ${escapeHtml(intern.status)}
+              </span>
+            </td>
+            <td class="px-4 py-3.5 text-right">
+              <div class="flex justify-end items-center gap-1">
+                <button type="button" onclick="openStudentQrDialog('${escapeHtml(intern.id)}')" class="rounded-md border border-line bg-white px-2 py-1 text-[10px] font-bold text-moss hover:bg-[#f5f3ff] inline-flex items-center gap-1" title="QR Code">
+                  <i data-lucide="qr-code" class="h-3 w-3"></i>
+                  <span>QR</span>
+                </button>
+                <button type="button" onclick="selectIntern('${escapeHtml(intern.id)}'); openEditIntern();" class="rounded-md border border-line bg-white px-2 py-1 text-[10px] font-bold text-ink hover:bg-[#f5f3ff]">Edit</button>
+                <button type="button" onclick="selectIntern('${escapeHtml(intern.id)}'); switchTab('public-portfolio');" class="rounded-md bg-moss px-2 py-1 text-[10px] font-bold text-white hover:bg-mossDark">View</button>
+                <button type="button" onclick="deleteIntern('${escapeHtml(intern.id)}')" class="rounded-md border border-rose-200 px-2 py-1 text-[10px] font-bold text-rose-700 hover:bg-rose-50">Del</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function setSelectOptions() {
+      const options = interns.length
+        ? interns.map(i => `<option value="${escapeHtml(i.id)}">${escapeHtml(i.name)} (${escapeHtml(i.id)})</option>`).join('')
+        : '<option value="">No intern records</option>';
+      document.getElementById('portfolioSelect').innerHTML = options;
+      document.getElementById('idcardSelect').innerHTML = options;
+      document.getElementById('evaluatorSelect').innerHTML = options;
+    }
+
+    function selectIntern(id) {
+      const intern = interns.find(i => i.id === id) || interns[0];
+      if (!intern) return;
+      selectedInternId = intern.id;
+
+      document.getElementById('portfolioSelect').value = intern.id;
+      document.getElementById('idcardSelect').value = intern.id;
+      document.getElementById('evaluatorSelect').value = intern.id;
+
+      // Render Portfolio Tab
+      document.getElementById('portfolioName').textContent = intern.name;
+      document.getElementById('portfolioRole').textContent = `${intern.role} · ${intern.id}`;
+      document.getElementById('portfolioCollege').textContent = `${intern.college} · ${intern.domain}`;
+      document.getElementById('portfolioScore').textContent = Number(intern.score).toFixed(1);
+      document.getElementById('portfolioGrade').textContent = `Grade ${intern.grade || gradeForScore(intern.score)} (${gradeDescription(intern.grade || gradeForScore(intern.score))})`;
+      document.getElementById('portfolioProject').textContent = intern.project || 'Capstone Technical Project';
+      document.getElementById('portfolioDescription').textContent = intern.description || 'Completed assigned technical tasks and engineering deliverables.';
+
+      // Attendance on portfolio
+      const days = Number(intern.days || 0);
+      const total = Math.max(Number(intern.total || 90), 1);
+      const pct = Math.min(Math.round((days / total) * 100), 100);
+      document.getElementById('portfolioAttendanceText').textContent = `${days}/${total} days (${pct}%)`;
+      document.getElementById('portfolioAttendanceBar').style.width = `${pct}%`;
+
+      // Skills
+      const skillsEl = document.getElementById('portfolioSkills');
+      skillsEl.innerHTML = (intern.skills || []).map(s => `
+        <span class="rounded-md bg-[#ede9fe] border border-[#ddd6fe] px-2.5 py-1 text-[10px] font-semibold text-moss">${escapeHtml(s)}</span>
+      `).join('');
+
+      // Rubric Marks Grid
+      const marksGrid = document.getElementById('portfolioMarksGrid');
+      const marks = intern.marks || {};
+      marksGrid.innerHTML = rubricCategories.map(({ key, label, weight }) => `
+        <div class="p-2.5 rounded-lg bg-[#faf8ff] border border-line">
+          <div class="flex items-center justify-between text-[10px]">
+            <span class="text-muted font-bold">${label}</span>
+            <span class="font-mono font-bold text-moss">${Number(marks[key] ?? intern.score).toFixed(1)}</span>
+          </div>
+          <div class="h-1.5 w-full bg-[#ede9fe] rounded-full overflow-hidden mt-1.5">
+            <div class="h-full bg-moss rounded-full" style="width: ${Math.min(Number(marks[key] ?? intern.score), 100)}%;"></div>
+          </div>
+        </div>
+      `).join('');
+
+      // Mentor Review
+      document.getElementById('portfolioMentorReview').textContent = intern.mentorReview ? `“${intern.mentorReview}”` : '“Demonstrated professional diligence and completed engineering deliverables.”';
+
+      // GitHub button
+      const gh = document.getElementById('portfolioGithub');
+      if (intern.github) {
+        gh.href = intern.github;
+        gh.classList.remove('hidden');
+      } else {
+        gh.classList.add('hidden');
+      }
+
+      // Photos
+      const photoEl = document.getElementById('portfolioPhoto');
+      const initialsEl = document.getElementById('portfolioInitialsFallback');
+      const initials = (intern.name || '').split(/\s+/).map(p => p[0]).join('').slice(0, 2).toUpperCase() || 'PS';
+      initialsEl.textContent = initials;
+      if (intern.photo) {
+        photoEl.src = intern.photo;
+        photoEl.classList.remove('hidden');
+        initialsEl.classList.add('hidden');
+      } else {
+        photoEl.classList.add('hidden');
+        initialsEl.classList.remove('hidden');
+      }
+
+      // ID Card view
+      document.getElementById('idcardName').textContent = intern.name;
+      document.getElementById('idcardId').textContent = intern.id;
+      document.getElementById('idcardRole').textContent = intern.role;
+      document.getElementById('idcardDomain').textContent = `${intern.college} · ${intern.domain}`;
+      document.getElementById('idcardStatus').textContent = intern.status;
+
+      const idPhoto = document.getElementById('idcardPhoto');
+      const idInitials = document.getElementById('idcardInitialsFallback');
+      idInitials.textContent = initials;
+      if (intern.photo) {
+        idPhoto.src = intern.photo;
+        idPhoto.classList.remove('hidden');
+        idInitials.classList.add('hidden');
+      } else {
+        idPhoto.classList.add('hidden');
+        idInitials.classList.remove('hidden');
+      }
+
+      // Evaluator view
+      document.getElementById('evaluationInternName').textContent = intern.name;
+      document.getElementById('evaluationInternId').textContent = `[${intern.id}]`;
+      document.getElementById('evaluationAttendancePreview').textContent = `Attendance: ${days}/${total} days (${pct}%)`;
+      document.getElementById('evaluatorMentorName').value = intern.mentorName || '';
+      document.getElementById('evaluatorMentorId').value = intern.mentorId || '';
+      document.getElementById('evaluatorReview').value = intern.mentorReview || '';
+      document.getElementById('evaluatorEvaluation').value = intern.evaluation || '';
+
+      rubricCategories.forEach(({ key, inputId }) => {
+        document.getElementById(inputId).value = Number(marks[key] ?? intern.score ?? 0);
+      });
+      calculateScore();
+
+      // Generate Live QRs
+      renderQRCodes(intern);
+      if (window.lucide) lucide.createIcons();
     }
 
     async function getProfileUrl(intern) {
       if (!intern || !intern.id) return '';
-      if (window.location.hostname.includes('github.io')) {
-        const path = window.location.pathname.replace(/\/+$/, '');
-        return `${window.location.origin}${path}/#intern=${encodeURIComponent(intern.id)}`;
-      }
-      const base = getEffectiveBaseUrl();
-      return new URL(`/profile/${encodeURIComponent(intern.id)}`, base).toString();
-    }
-
-    function downloadQrFromElement(element, filename) {
-      if (!element) return;
-      const canvas = element.querySelector('canvas');
-      if (canvas) {
-        const link = document.createElement('a');
-        link.download = filename;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-        return;
-      }
-      const img = element.querySelector('img');
-      if (img && img.src) {
-        const link = document.createElement('a');
-        link.download = filename;
-        link.href = img.src;
-        link.click();
-      }
-    }
-
-    function copySelectedProfileUrl() {
-      const label = document.getElementById('portfolioQrLabel');
-      const url = label?.dataset?.url || label?.textContent;
-      if (!url) return;
-      navigator.clipboard.writeText(url).then(() => {
-        window.alert('Profile link copied to clipboard!');
-      }).catch(() => {
-        window.prompt('Copy profile link:', url);
-      });
-    }
-
-    function downloadSelectedQrCode() {
-      const intern = interns.find(item => item.id === selectedInternId);
-      const container = document.getElementById('portfolioQr');
-      if (intern && container) {
-        downloadQrFromElement(container, `${intern.id}-portfolio-qr.png`);
-      }
-    }
-
-    function openSelectedProfileTab() {
-      const label = document.getElementById('portfolioQrLabel');
-      const url = label?.dataset?.url || label?.textContent;
-      if (url) window.open(url, '_blank');
-    }
-
-    async function openStudentQrDialog(id) {
-      const intern = interns.find(item => item.id === id);
-      if (!intern) return;
-      activeModalIntern = intern;
-
-      document.getElementById('qrModalName').textContent = intern.name;
-      document.getElementById('qrModalRole').textContent = intern.role;
-      document.getElementById('qrModalMeta').textContent = `${intern.id} · ${intern.domain}`;
-
-      const photo = document.getElementById('qrModalPhoto');
-      const initials = document.getElementById('qrModalInitials');
-      const nameParts = (intern.name || '').trim().split(/\s+/);
-      initials.textContent = nameParts.length > 1 ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase() : (nameParts[0] ? nameParts[0].slice(0, 2).toUpperCase() : 'PS');
-
-      if (intern.photo && isSafePhotoUrl(intern.photo)) {
-        photo.src = intern.photo;
-        photo.classList.remove('hidden');
-        initials.classList.add('hidden');
-      } else {
-        photo.classList.add('hidden');
-        initials.classList.remove('hidden');
-      }
-
-      await updateModalQrCode();
-      updateQrHostLabels();
-      document.getElementById('studentQrDialog').showModal();
-      if (window.lucide) lucide.createIcons();
-    }
-
-    function closeStudentQrDialog() {
-      document.getElementById('studentQrDialog').close();
-    }
-
-    async function updateModalQrCode() {
-      if (!activeModalIntern) return;
-      const container = document.getElementById('modalQrCode');
-      container.replaceChildren();
-      const url = await getProfileUrl(activeModalIntern);
-      document.getElementById('modalQrUrl').textContent = url;
-      try {
-        new QRCode(container, {
-          text: url,
-          width: 200,
-          height: 200,
-          colorDark: '#17211d',
-          colorLight: '#ffffff',
-          correctLevel: QRCode.CorrectLevel.M
-        });
-      } catch (err) {
-        console.error('Modal QR generation error:', err);
-        container.textContent = 'QR generation failed';
-      }
-    }
-
-    function toggleQrHostMode() {
-      qrHostMode = qrHostMode === 'lan' ? 'origin' : 'lan';
-      updateQrHostLabels();
-      updateModalQrCode();
-      const currentIntern = interns.find(item => item.id === selectedInternId);
-      if (currentIntern) renderQRCodes(currentIntern);
-    }
-
-    function updateQrHostLabels() {
-      const isLan = qrHostMode === 'lan';
-      const desc = document.getElementById('qrModalHostDesc');
-      const btn = document.getElementById('toggleLanBtn');
-      if (desc) {
-        if (isLan && networkInfo?.localIp) {
-          desc.textContent = `Using Wi-Fi address (http://${networkInfo.localIp}:${networkInfo.port})`;
-        } else {
-          desc.textContent = `Using browser address (${window.location.host})`;
-        }
-      }
-      if (btn) {
-        btn.textContent = isLan ? 'Switch to Localhost' : 'Switch to Wi-Fi IP';
-      }
-    }
-
-    function copyModalQrLink() {
-      const url = document.getElementById('modalQrUrl').textContent;
-      if (!url) return;
-      navigator.clipboard.writeText(url).then(() => {
-        window.alert('Student Profile URL copied to clipboard!');
-      }).catch(() => {
-        window.prompt('Copy Student Profile URL:', url);
-      });
-    }
-
-    function downloadModalQrCode() {
-      if (!activeModalIntern) return;
-      const container = document.getElementById('modalQrCode');
-      downloadQrFromElement(container, `${activeModalIntern.id}-qr-profile.png`);
-    }
-
-    function openModalProfileTab() {
-      const url = document.getElementById('modalQrUrl').textContent;
-      if (url) window.open(url, '_blank');
+      return `${window.location.origin}/profile/${encodeURIComponent(intern.id)}`;
     }
 
     async function renderQRCodes(intern) {
-      const generation = ++qrRenderGeneration;
-      const notice = document.getElementById('qrHostingNotice');
-      const label = document.getElementById('portfolioQrLabel');
-      const targets = [
-        { element: document.getElementById('portfolioQr'), size: 210 },
-        { element: document.getElementById('idcardQr'), size: 176 }
-      ];
-      targets.forEach(({ element }) => element.replaceChildren());
+      const url = await getProfileUrl(intern);
+      document.getElementById('portfolioQrLabel').textContent = url;
 
-      if (typeof window.QRCode !== 'function') {
-        notice.textContent = 'The QR code library is unavailable. Check your internet connection and reload.';
-        label.textContent = 'QR unavailable';
-        targets.forEach(({ element }) => { element.textContent = 'QR unavailable'; });
+      const portQr = document.getElementById('portfolioQr');
+      portQr.replaceChildren();
+      const idQr = document.getElementById('idcardQr');
+      idQr.replaceChildren();
+
+      if (window.QRCode) {
+        try {
+          new QRCode(portQr, { text: url, width: 170, height: 170, colorDark: '#1e1b4b', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+          new QRCode(idQr, { text: url, width: 140, height: 140, colorDark: '#1e1b4b', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+        } catch (e) {
+          portQr.textContent = 'QR Code';
+          idQr.textContent = 'QR Code';
+        }
+      }
+    }
+
+    function calculateScore() {
+      const marks = readMarkValues(k => document.getElementById(rubricCategories.find(c => c.key === k).inputId).value);
+      const scoreError = document.getElementById('scoreError');
+      const resScore = document.getElementById('res_score');
+      const resGrade = document.getElementById('res_grade');
+
+      if (!marks) {
+        scoreError.classList.remove('hidden');
+        resScore.textContent = '--';
+        resGrade.textContent = 'Check Score Inputs';
+        return;
+      }
+      scoreError.classList.add('hidden');
+      const score = weightedScore(marks);
+      const grade = gradeForScore(score);
+      resScore.textContent = score.toFixed(1);
+      resGrade.textContent = `Grade ${grade} (${gradeDescription(grade)})`;
+    }
+
+    async function saveEvaluation() {
+      const intern = interns.find(i => i.id === selectedInternId);
+      if (!intern) return;
+
+      const marks = readMarkValues(k => document.getElementById(rubricCategories.find(c => c.key === k).inputId).value);
+      if (!marks) {
+        document.getElementById('evaluationSaveStatus').textContent = 'Please enter valid scores from 0 to 100 for all categories.';
         return;
       }
 
-      label.textContent = `Creating unique profile QR for ${intern.name}…`;
-      targets.forEach(({ element }) => { element.textContent = 'Creating profile QR…'; });
+      const score = weightedScore(marks);
+      const grade = gradeForScore(score);
+      const payload = {
+        marks,
+        score,
+        grade,
+        mentorName: document.getElementById('evaluatorMentorName').value.trim(),
+        mentorId: document.getElementById('evaluatorMentorId').value.trim(),
+        mentorReview: document.getElementById('evaluatorReview').value.trim(),
+        evaluation: document.getElementById('evaluatorEvaluation').value.trim()
+      };
+
       try {
-        const url = await getProfileUrl(intern);
-        if (generation !== qrRenderGeneration || selectedInternId !== intern.id) return;
-        label.textContent = url;
-        label.dataset.url = url;
-        notice.textContent = 'Scan to open this student\'s live verified profile.';
-        targets.forEach(({ element, size }) => {
-          element.replaceChildren();
-          try {
-            new QRCode(element, { text: url, width: size, height: size, colorDark: '#17211d', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
-          } catch (error) {
-            console.error('QR code could not be generated.', error);
-            element.textContent = 'QR unavailable';
-          }
+        const response = await fetch(`/api/interns/${encodeURIComponent(intern.id)}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
         });
-      } catch (error) {
-        if (generation !== qrRenderGeneration) return;
-        console.error('Specific intern profile link could not be generated.', error);
-        notice.textContent = 'Could not generate profile link.';
-        label.textContent = 'Profile QR unavailable';
-        targets.forEach(({ element }) => { element.textContent = 'QR unavailable'; });
+
+        if (response.ok) {
+          const result = await response.json();
+          const updated = result.student;
+          interns = interns.map(i => i.id === updated.id ? updated : i);
+          document.getElementById('evaluationSaveStatus').textContent = '✅ Evaluation saved to database!';
+          renderAll();
+          setTimeout(() => { document.getElementById('evaluationSaveStatus').textContent = ''; }, 3000);
+        } else {
+          const err = await response.json();
+          document.getElementById('evaluationSaveStatus').textContent = `❌ Error: ${err.error}`;
+        }
+      } catch (e) {
+        document.getElementById('evaluationSaveStatus').textContent = '❌ Connection failure while saving evaluation.';
       }
     }
 
-    function openEditIntern() {
-      const intern = interns.find(item => item.id === selectedInternId) || interns[0];
-      if (!intern) return;
-      isCreatingIntern = false;
-      document.getElementById('editInternTitle').textContent = 'Edit intern information';
-      document.getElementById('saveInternButton').textContent = 'Save changes';
+    function calculateEditScore() {
       const form = document.getElementById('editInternForm');
-      Object.entries({
-        id: intern.id,
-        name: intern.name,
-        college: intern.college,
-        domain: intern.domain,
-        role: intern.role,
-        days: intern.days,
-        total: intern.total,
-        score: intern.score,
-        status: intern.status,
-        mentorName: intern.mentorName,
-        mentorId: intern.mentorId,
-        mentorReview: intern.mentorReview,
-        evaluation: intern.evaluation,
-        photo: intern.photo,
-        github: intern.github || '',
-        project: intern.project,
-        description: intern.description,
-        skills: intern.skills.join(', '),
-        ...Object.fromEntries(rubricCategories.map(({ key }) => [`mark_${key}`, intern.marks[key]]))
-      }).forEach(([name, value]) => { form.elements.namedItem(name).value = value ?? ''; });
-      document.getElementById('photoUpload').value = '';
-      document.getElementById('editError').classList.add('hidden');
-      document.getElementById('editInternDialog').showModal();
-    }
-
-    function nextInternId() {
-      const year = new Date().getFullYear();
-      const prefix = `PSM-INT-${year}-`;
-      const usedIds = new Set(interns.map(intern => intern.id));
-      let sequence = interns.reduce((highest, intern) => {
-        const match = intern.id.match(/^PSM-INT-\d{4}-(\d+)$/);
-        return match ? Math.max(highest, Number(match[1])) : highest;
-      }, 0) + 1;
-      let id = `${prefix}${String(sequence).padStart(4, '0')}`;
-      while (usedIds.has(id)) {
-        sequence += 1;
-        id = `${prefix}${String(sequence).padStart(4, '0')}`;
+      const marks = readMarkValues(k => form.elements.namedItem(`mark_${k}`)?.value);
+      const scoreInput = form.elements.namedItem('score');
+      if (marks) {
+        scoreInput.value = weightedScore(marks).toFixed(1);
       }
-      return id;
     }
 
     function openAddIntern() {
       isCreatingIntern = true;
       const form = document.getElementById('editInternForm');
       form.reset();
-      Object.entries({
-        id: nextInternId(),
-        github: '',
-        days: 0,
-        total: 90,
-        score: 0,
-        status: 'ACTIVE',
-        ...Object.fromEntries(rubricCategories.map(({ key }) => [`mark_${key}`, 0]))
-      }).forEach(([name, value]) => {
-        form.elements.namedItem(name).value = value;
+      document.getElementById('editInternTitle').textContent = 'Register New Intern';
+      document.getElementById('saveInternButton').textContent = 'Create Intern';
+      document.getElementById('formInternId').readOnly = false;
+
+      // Generate next sequential ID
+      const year = new Date().getFullYear();
+      let seq = interns.length + 1;
+      let id = `PSM-INT-${year}-${String(seq).padStart(4, '0')}`;
+      while (interns.some(i => i.id === id)) {
+        seq++;
+        id = `PSM-INT-${year}-${String(seq).padStart(4, '0')}`;
+      }
+      form.elements.namedItem('id').value = id;
+      form.elements.namedItem('days').value = 0;
+      form.elements.namedItem('total').value = 90;
+      form.elements.namedItem('score').value = 0;
+      form.elements.namedItem('status').value = 'ACTIVE';
+
+      rubricCategories.forEach(({ key }) => {
+        form.elements.namedItem(`mark_${key}`).value = 0;
       });
-      document.getElementById('editInternTitle').textContent = 'Add new intern';
-      document.getElementById('saveInternButton').textContent = 'Add intern';
+
+      document.getElementById('editError').classList.add('hidden');
+      document.getElementById('editInternDialog').showModal();
+    }
+
+    function openEditIntern() {
+      const intern = interns.find(i => i.id === selectedInternId);
+      if (!intern) return;
+      isCreatingIntern = false;
+
+      const form = document.getElementById('editInternForm');
+      document.getElementById('editInternTitle').textContent = `Edit Intern: ${intern.name}`;
+      document.getElementById('saveInternButton').textContent = 'Save Changes';
+      document.getElementById('formInternId').readOnly = true;
+
+      form.elements.namedItem('id').value = intern.id;
+      form.elements.namedItem('name').value = intern.name;
+      form.elements.namedItem('college').value = intern.college;
+      form.elements.namedItem('domain').value = intern.domain;
+      form.elements.namedItem('role').value = intern.role;
+      form.elements.namedItem('days').value = intern.days;
+      form.elements.namedItem('total').value = intern.total;
+      form.elements.namedItem('score').value = Number(intern.score).toFixed(1);
+      form.elements.namedItem('status').value = intern.status;
+      form.elements.namedItem('mentorName').value = intern.mentorName || '';
+      form.elements.namedItem('mentorId').value = intern.mentorId || '';
+      form.elements.namedItem('mentorReview').value = intern.mentorReview || '';
+      form.elements.namedItem('evaluation').value = intern.evaluation || '';
+      form.elements.namedItem('photo').value = intern.photo || '';
+      form.elements.namedItem('project').value = intern.project || '';
+      form.elements.namedItem('description').value = intern.description || '';
+      form.elements.namedItem('skills').value = (intern.skills || []).join(', ');
+      form.elements.namedItem('github').value = intern.github || '';
+
+      const marks = intern.marks || {};
+      rubricCategories.forEach(({ key }) => {
+        form.elements.namedItem(`mark_${key}`).value = Number(marks[key] ?? intern.score);
+      });
+
       document.getElementById('photoUpload').value = '';
       document.getElementById('editError').classList.add('hidden');
       document.getElementById('editInternDialog').showModal();
@@ -831,58 +1317,13 @@
       document.getElementById('editInternDialog').close();
     }
 
-    function showEditError(message) {
-      const error = document.getElementById('editError');
-      error.textContent = message;
-      error.classList.remove('hidden');
-    }
-
-    function readMarkValues(readValue) {
-      const rawValues = Object.fromEntries(rubricCategories.map(({ key }) => [key, readValue(key)]));
-      const marks = Object.fromEntries(rubricCategories.map(({ key }) => [key, Number(rawValues[key])]));
-      const invalid = rubricCategories.some(({ key }) => {
-        const value = marks[key];
-        return String(rawValues[key] ?? '').trim() === '' || !Number.isFinite(value) || value < 0 || value > 100;
-      });
-      return invalid ? null : marks;
-    }
-
-    function weightedScore(marks) {
-      return Math.round(rubricCategories.reduce((score, { key, weight }) => score + marks[key] * weight, 0) * 10) / 10;
-    }
-
-    function editFormMarks() {
-      const form = document.getElementById('editInternForm');
-      return readMarkValues(key => form.elements.namedItem(`mark_${key}`).value);
-    }
-
-    function calculateEditScore() {
-      const marks = editFormMarks();
-      const scoreField = document.getElementById('editInternForm').elements.namedItem('score');
-      if (!marks) {
-        scoreField.value = '';
-        return;
-      }
-      scoreField.value = weightedScore(marks).toFixed(1);
-      document.getElementById('editError').classList.add('hidden');
-    }
-
-    function isSafePhotoUrl(value) {
-      if (/^data:image\/(?:jpeg|png|webp);base64,/i.test(value)) return true;
-      try {
-        return ['http:', 'https:'].includes(new URL(value).protocol);
-      } catch {
-        return false;
-      }
-    }
-
     function compressPhoto(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onerror = () => reject(new Error('The selected photo could not be read.'));
+        reader.onerror = () => reject(new Error('Photo file could not be read.'));
         reader.onload = () => {
           const image = new Image();
-          image.onerror = () => reject(new Error('Choose a valid image file.'));
+          image.onerror = () => reject(new Error('Invalid image file.'));
           image.onload = () => {
             const scale = Math.min(1, 640 / Math.max(image.width, image.height));
             const canvas = document.createElement('canvas');
@@ -900,437 +1341,329 @@
     async function saveIntern(event) {
       event.preventDefault();
       const form = event.currentTarget;
-      const values = new FormData(form);
-      const days = Number(values.get('days'));
-      const total = Number(values.get('total'));
-      const marks = readMarkValues(key => values.get(`mark_${key}`));
+      const data = new FormData(form);
+
+      const days = Number(data.get('days'));
+      const total = Number(data.get('total'));
+      if (!Number.isInteger(days) || !Number.isInteger(total) || days < 0 || total < 1 || days > total) {
+        showEditError('Working days must be whole numbers, and days completed cannot exceed total days.');
+        return;
+      }
+
+      const marks = readMarkValues(k => data.get(`mark_${k}`));
       if (!marks) {
-        showEditError('Enter a mark from 0 to 100 for every rubric category.');
+        showEditError('Rubric scores must be numbers between 0 and 100.');
         return;
       }
       const score = weightedScore(marks);
-      if (!Number.isInteger(days) || !Number.isInteger(total) || days < 0 || total < 1 || days > total) {
-        showEditError('Working days must be whole numbers, and completed days cannot exceed total days.');
-        return;
-      }
-      const existingIntern = isCreatingIntern ? null : interns.find(intern => intern.id === selectedInternId);
-      if (!isCreatingIntern && !existingIntern) {
-        showEditError('The selected intern no longer exists. Close this form and try again.');
-        return;
-      }
-      let photo = String(values.get('photo') || '').trim() || existingIntern?.photo || '';
+
+      let photo = String(data.get('photo') || '').trim();
       const photoFile = document.getElementById('photoUpload').files[0];
-      try {
-        if (photoFile) photo = await compressPhoto(photoFile);
-      } catch (error) {
-        showEditError(error.message);
-        return;
+      if (photoFile) {
+        try {
+          photo = await compressPhoto(photoFile);
+        } catch (e) {
+          showEditError(e.message);
+          return;
+        }
       }
-      if (photo && !isSafePhotoUrl(photo)) {
-        showEditError('Use an http(s) image URL or upload an image file.');
-        return;
-      }
-      const updatedIntern = {
-        ...(existingIntern || {}),
-        id: String(values.get('id')).trim(),
-        name: String(values.get('name')).trim(),
-        college: String(values.get('college')).trim(),
-        domain: String(values.get('domain')).trim(),
-        role: String(values.get('role')).trim(),
+
+      const payload = {
+        id: String(data.get('id')).trim(),
+        name: String(data.get('name')).trim(),
+        college: String(data.get('college')).trim(),
+        domain: String(data.get('domain')).trim(),
+        role: String(data.get('role')).trim(),
         days,
         total,
         score,
         marks,
         grade: gradeForScore(score),
-        status: String(values.get('status')),
-        mentorName: String(values.get('mentorName') || '').trim(),
-        mentorId: String(values.get('mentorId') || '').trim(),
-        mentorReview: String(values.get('mentorReview') || '').trim(),
-        evaluation: String(values.get('evaluation') || '').trim(),
-        photo,
-        github: String(values.get('github') || '').trim(),
-        project: String(values.get('project')).trim(),
-        description: String(values.get('description')).trim(),
-        skills: String(values.get('skills')).split(',').map(skill => skill.trim()).filter(Boolean)
+        status: String(data.get('status')),
+        mentorName: String(data.get('mentorName') || '').trim(),
+        mentorId: String(data.get('mentorId') || '').trim(),
+        mentorReview: String(data.get('mentorReview') || '').trim(),
+        evaluation: String(data.get('evaluation') || '').trim(),
+        project: String(data.get('project') || '').trim(),
+        description: String(data.get('description') || '').trim(),
+        skills: String(data.get('skills') || '').split(',').map(s => s.trim()).filter(Boolean),
+        github: String(data.get('github') || '').trim(),
+        photo
       };
-      if (!updatedIntern.id) {
-        showEditError('Enter an intern ID.');
-        return;
+
+      try {
+        const url = isCreatingIntern ? '/api/interns' : `/api/interns/${encodeURIComponent(payload.id)}`;
+        const method = isCreatingIntern ? 'POST' : 'PATCH';
+
+        const response = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          const saved = result.student;
+          if (isCreatingIntern) {
+            interns.push(saved);
+          } else {
+            interns = interns.map(i => i.id === saved.id ? saved : i);
+          }
+          selectedInternId = saved.id;
+          closeEditIntern();
+          renderAll();
+          showAlert(isCreatingIntern ? `Intern ${saved.name} registered successfully.` : `Record for ${saved.name} updated.`);
+        } else {
+          const err = await response.json();
+          showEditError(err.error || 'Server rejected the intern record.');
+        }
+      } catch (err) {
+        showEditError('Connection failure while saving intern record.');
       }
-      if (interns.some(intern => intern.id === updatedIntern.id && intern.id !== existingIntern?.id)) {
-        showEditError('That intern ID is already in use. Enter a unique ID.');
-        return;
-      }
-      const updatedInterns = isCreatingIntern ? [...interns, updatedIntern] : interns.map(intern => intern.id === selectedInternId ? updatedIntern : intern);
-      if (!await persistInterns(updatedInterns)) {
-        showEditError('Unable to save to the permanent dataset. Check the connection and try again.');
-        return;
-      }
-      interns = updatedInterns;
-      selectedInternId = updatedIntern.id;
-      isCreatingIntern = false;
-      renderExecutiveOverview();
-      initCharts();
-      const query = document.getElementById('studentSearch').value.trim().toLowerCase();
-      renderInterns(interns.filter(intern => [intern.name, intern.id, intern.college, intern.domain, intern.role, intern.status, intern.mentorName, intern.mentorId].some(value => value.toLowerCase().includes(query))));
-      setSelectOptions();
-      selectIntern(selectedInternId);
-      closeEditIntern();
     }
 
-    function openProfileFromHash() {
-      const profileMatch = window.location.hash.match(/^#profile=([A-Za-z0-9_-]+)$/);
-      if (profileMatch) {
-        try {
-          const payload = profileMatch[1].replace(/-/g, '+').replace(/_/g, '/');
-          const binary = atob(payload.padEnd(Math.ceil(payload.length / 4) * 4, '='));
-          const bytes = Uint8Array.from(binary, character => character.charCodeAt(0));
-          const decodedProfile = JSON.parse(new TextDecoder().decode(bytes));
-          const linkedIntern = Array.isArray(decodedProfile) ? {
-            id: decodedProfile[0],
-            name: decodedProfile[1],
-            college: decodedProfile[2],
-            domain: decodedProfile[3],
-            role: decodedProfile[4],
-            score: decodedProfile[5],
-            grade: gradeForScore(decodedProfile[5]),
-            status: decodedProfile[6],
-            project: decodedProfile[7],
-            description: decodedProfile[8],
-            skills: decodedProfile[9],
-            photo: decodedProfile[10],
-            days: 0,
-            total: 1
-          } : decodedProfile;
-          if (!isValidInternRecord(linkedIntern)) return;
-          interns = [...interns.filter(intern => intern.id !== linkedIntern.id), linkedIntern];
-          setSelectOptions();
-          selectIntern(linkedIntern.id);
-          document.body.classList.add('public-profile-view');
-          switchTab('public-portfolio');
-        } catch (error) {
-          console.warn('The QR profile link could not be read.', error);
-        }
+    function showEditError(msg) {
+      const el = document.getElementById('editError');
+      el.textContent = msg;
+      el.classList.remove('hidden');
+    }
+
+    async function deleteIntern(id) {
+      const intern = interns.find(i => i.id === id);
+      if (!intern) return;
+      if (!window.confirm(`Permanently delete intern record "${intern.name}" (${intern.id}) from the database?`)) {
         return;
       }
-      const match = window.location.hash.match(/^#intern=(.+)$/);
-      if (!match) return;
-      let id;
+
       try {
-        id = decodeURIComponent(match[1]);
-      } catch {
+        const response = await fetch(`/api/interns/${encodeURIComponent(id)}`, { method: 'DELETE' });
+        if (response.ok) {
+          interns = interns.filter(i => i.id !== id);
+          if (selectedInternId === id) {
+            selectedInternId = interns[0]?.id || null;
+          }
+          renderAll();
+          showAlert(`Intern record [${id}] permanently deleted.`);
+        } else {
+          const err = await response.json();
+          showAlert(`Delete failed: ${err.error}`, true);
+        }
+      } catch (e) {
+        showAlert('Network error while deleting intern.', true);
+      }
+    }
+
+    // Quick Attendance Modal
+    function openQuickAttendance(id) {
+      const intern = interns.find(i => i.id === id);
+      if (!intern) return;
+      activeAttendanceIntern = intern;
+      document.getElementById('attendanceDialogMeta').textContent = `${intern.name} (${intern.id})`;
+      document.getElementById('quickDaysInput').value = intern.days;
+      document.getElementById('quickTotalText').textContent = intern.total;
+      updateQuickAttendancePreview();
+      document.getElementById('attendanceDialog').showModal();
+    }
+
+    function adjustAttendance(delta) {
+      const input = document.getElementById('quickDaysInput');
+      const cur = Number(input.value || 0);
+      const total = activeAttendanceIntern?.total || 90;
+      const next = Math.max(0, Math.min(cur + delta, total));
+      input.value = next;
+      updateQuickAttendancePreview();
+    }
+
+    function updateQuickAttendancePreview() {
+      const cur = Number(document.getElementById('quickDaysInput').value || 0);
+      const total = activeAttendanceIntern?.total || 90;
+      const pct = Math.min(Math.round((cur / total) * 100), 100);
+      document.getElementById('quickPercentageText').textContent = `${pct}%`;
+      document.getElementById('quickAttendanceProgressBar').style.width = `${pct}%`;
+    }
+
+    document.getElementById('quickDaysInput')?.addEventListener('input', updateQuickAttendancePreview);
+
+    async function saveQuickAttendance() {
+      if (!activeAttendanceIntern) return;
+      const days = Number(document.getElementById('quickDaysInput').value);
+      const total = activeAttendanceIntern.total;
+
+      if (!Number.isInteger(days) || days < 0 || days > total) {
+        window.alert('Attendance days cannot exceed total internship days.');
         return;
       }
-      if (!interns.some(intern => intern.id === id)) return;
-      selectIntern(id);
-      document.body.classList.add('public-profile-view');
-      switchTab('public-portfolio');
+
+      try {
+        const response = await fetch(`/api/interns/${encodeURIComponent(activeAttendanceIntern.id)}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ days })
+        });
+
+        if (response.ok) {
+          const res = await response.json();
+          interns = interns.map(i => i.id === res.student.id ? res.student : i);
+          document.getElementById('attendanceDialog').close();
+          renderAll();
+          showAlert(`Attendance updated for ${res.student.name}: ${days}/${total} days.`);
+        }
+      } catch (e) {
+        window.alert('Failed to update attendance.');
+      }
+    }
+
+    // Backup & Export
+    function exportInterns() {
+      const backup = {
+        format: 'psm-internhub-backup',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        students: interns
+      };
+      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `psm-internhub-cohort-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    async function importInterns(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      try {
+        const content = JSON.parse(await file.text());
+        const records = Array.isArray(content) ? content : content.students;
+        if (!Array.isArray(records) || records.length === 0) {
+          throw new Error('No student records found in file.');
+        }
+        if (!window.confirm(`Import and synchronize ${records.length} intern records to the active database?`)) return;
+
+        const response = await fetch('/api/interns', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ students: records })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          interns = data.students;
+          selectedInternId = interns[0]?.id || null;
+          renderAll();
+          showAlert(`Successfully imported ${interns.length} intern records.`);
+        } else {
+          const err = await response.json();
+          showAlert(`Import failed: ${err.error}`, true);
+        }
+      } catch (err) {
+        window.alert('Import error: ' + err.message);
+      } finally {
+        event.target.value = '';
+      }
+    }
+
+    // Modal QR Dialog
+    async function openStudentQrDialog(id) {
+      const intern = interns.find(i => i.id === id);
+      if (!intern) return;
+      activeModalIntern = intern;
+
+      document.getElementById('qrModalName').textContent = intern.name;
+      document.getElementById('qrModalRole').textContent = intern.role;
+      document.getElementById('qrModalMeta').textContent = `${intern.id} · ${intern.domain}`;
+
+      const photo = document.getElementById('qrModalPhoto');
+      const initials = document.getElementById('qrModalInitials');
+      const nameParts = (intern.name || '').trim().split(/\s+/);
+      initials.textContent = nameParts.length > 1 ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase() : 'PS';
+
+      if (intern.photo) {
+        photo.src = intern.photo;
+        photo.classList.remove('hidden');
+        initials.classList.add('hidden');
+      } else {
+        photo.classList.add('hidden');
+        initials.classList.remove('hidden');
+      }
+
+      const container = document.getElementById('modalQrCode');
+      container.replaceChildren();
+      const url = await getProfileUrl(intern);
+      document.getElementById('modalQrUrl').textContent = url;
+
+      if (window.QRCode) {
+        new QRCode(container, { text: url, width: 190, height: 190, colorDark: '#1e1b4b', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+      }
+
+      document.getElementById('studentQrDialog').showModal();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeStudentQrDialog() {
+      document.getElementById('studentQrDialog').close();
+    }
+
+    function copyModalQrLink() {
+      const url = document.getElementById('modalQrUrl').textContent;
+      navigator.clipboard.writeText(url).then(() => window.alert('Profile URL copied to clipboard!'));
+    }
+
+    function downloadModalQrCode() {
+      if (!activeModalIntern) return;
+      const canvas = document.getElementById('modalQrCode').querySelector('canvas');
+      if (canvas) {
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL('image/png');
+        a.download = `${activeModalIntern.id}-verification-qr.png`;
+        a.click();
+      }
+    }
+
+    function openModalProfileTab() {
+      const url = document.getElementById('modalQrUrl').textContent;
+      if (url) window.open(url, '_blank');
+    }
+
+    function copySelectedProfileUrl() {
+      const url = document.getElementById('portfolioQrLabel').textContent;
+      navigator.clipboard.writeText(url).then(() => window.alert('Profile link copied to clipboard!'));
+    }
+
+    function downloadSelectedQrCode() {
+      const intern = interns.find(i => i.id === selectedInternId);
+      const canvas = document.getElementById('portfolioQr').querySelector('canvas');
+      if (intern && canvas) {
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL('image/png');
+        a.download = `${intern.id}-portfolio-qr.png`;
+        a.click();
+      }
+    }
+
+    function openSelectedProfileTab() {
+      const url = document.getElementById('portfolioQrLabel').textContent;
+      if (url) window.open(url, '_blank');
     }
 
     function switchTab(tabId) {
-      if (tabId !== 'public-portfolio') document.body.classList.remove('public-profile-view');
       document.querySelectorAll('main section[id^="view-"]').forEach(section => {
-        section.classList.toggle('hidden', section.id !== `view-${tabId}`);
-        if (section.id === `view-${tabId}`) {
+        const matches = section.id === `view-${tabId}`;
+        section.classList.toggle('hidden', !matches);
+        if (matches) {
           section.classList.remove('view-enter');
           requestAnimationFrame(() => section.classList.add('view-enter'));
         }
       });
-      document.querySelectorAll('.nav-link').forEach(button => button.classList.toggle('active', button.dataset.tab === tabId));
+      document.querySelectorAll('.nav-link').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tabId);
+      });
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function renderInterns(list) {
-      const tbody = document.getElementById('internRows');
-      document.getElementById('emptyState').classList.toggle('hidden', list.length > 0);
-      document.getElementById('resultCount').textContent = list.length;
-      tbody.innerHTML = list.map(intern => `
-        <tr class="transition-colors hover:bg-[#faf8ff]">
-          <td class="px-4 py-3.5"><div class="flex items-center gap-1.5"><p class="font-bold text-ink">${escapeHtml(intern.name)}</p>${intern.github ? `<a href="${escapeHtml(intern.github.startsWith('http://') || intern.github.startsWith('https://') ? intern.github : 'https://github.com/' + intern.github.replace(/^@/, ''))}" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-moss inline-flex items-center" title="GitHub Profile"><i data-lucide="github" class="h-3.5 w-3.5"></i></a>` : ''}</div><p class="mt-1 font-mono text-[10px] text-moss">${escapeHtml(intern.id)}</p></td>
-          <td class="px-4 py-3.5"><p class="font-semibold">${escapeHtml(intern.college)}</p><p class="mt-1 text-[10px] text-muted">${escapeHtml(intern.domain)}</p></td>
-          <td class="px-4 py-3.5">${escapeHtml(intern.role)}</td>
-          <td class="px-4 py-3.5"><p class="font-semibold">${escapeHtml(intern.mentorName || 'Not assigned')}</p><p class="mt-1 font-mono text-[10px] text-muted">${escapeHtml(intern.mentorId)}</p></td>
-          <td class="px-4 py-3.5 text-center font-mono text-[11px]">${intern.days}<span class="text-muted"> / ${intern.total}</span></td>
-          <td class="px-4 py-3.5 text-center"><span class="font-mono font-medium">${Number(intern.score).toFixed(1)}</span><span class="ml-1.5 rounded bg-[#ede9fe] px-1.5 py-1 text-[9px] font-bold text-moss">${escapeHtml(intern.grade)}</span></td>
-          <td class="px-4 py-3.5 text-center"><span class="rounded-full ${intern.status === 'COMPLETED' ? 'bg-[#ede9fe] text-moss' : 'bg-[#f3e8ff] text-[#6d28d9]'} px-2 py-1 text-[9px] font-bold">${escapeHtml(intern.status)}</span></td>
-          <td class="px-4 py-3.5 text-right"><div class="flex justify-end gap-1.5"><button type="button" data-action="qr" data-intern-id="${escapeHtml(intern.id)}" class="rounded-md border border-[#ddd6fe] bg-[#faf8ff] px-2.5 py-1.5 text-[10px] font-bold text-moss hover:bg-[#ede9fe] inline-flex items-center gap-1" title="View & Download Profile QR"><i data-lucide="qr-code" class="h-3.5 w-3.5"></i><span>QR Code</span></button><button type="button" data-action="edit" data-intern-id="${escapeHtml(intern.id)}" class="rounded-md border border-line px-2.5 py-1.5 text-[10px] font-bold text-moss hover:bg-[#f5f3ff]">Edit</button><button type="button" data-action="view" data-intern-id="${escapeHtml(intern.id)}" class="rounded-md bg-moss px-2.5 py-1.5 text-[10px] font-bold text-white hover:bg-[#6d28d9]">View</button><button type="button" data-action="delete" data-intern-id="${escapeHtml(intern.id)}" class="rounded-md border border-rose-200 px-2 py-1.5 text-[10px] font-bold text-rose-700 hover:bg-rose-50">Del</button></div></td>
-        </tr>`).join('');
-      if (window.lucide) lucide.createIcons();
-    }
-
-    function filterStudents() {
-      const query = document.getElementById('studentSearch').value.trim().toLowerCase();
-      renderInterns(interns.filter(intern => [intern.name, intern.id, intern.college, intern.domain, intern.role, intern.status, intern.mentorName, intern.mentorId].some(value => value.toLowerCase().includes(query))));
-    }
-
-    async function deleteIntern(id) {
-      const intern = interns.find(item => item.id === id);
-      if (!intern || !window.confirm(`Permanently delete ${intern.name} (${intern.id}) from this browser? Export a backup first if you may need this record later.`)) return;
-      const updatedInterns = interns.filter(item => item.id !== id);
-      if (!await persistInterns(updatedInterns)) {
-        window.alert('Unable to save changes to the permanent dataset. The student record was not deleted.');
-        return;
-      }
-      interns = updatedInterns;
-      selectedInternId = interns.some(item => item.id === selectedInternId) ? selectedInternId : (interns[0]?.id ?? null);
-      renderExecutiveOverview();
-      initCharts();
-      const query = document.getElementById('studentSearch').value.trim().toLowerCase();
-      renderInterns(interns.filter(item => [item.name, item.id, item.college, item.domain, item.role, item.status, item.mentorName, item.mentorId].some(value => value.toLowerCase().includes(query))));
-      setSelectOptions();
-      selectIntern(selectedInternId);
-    }
-
-    function setSelectOptions() {
-      const options = interns.length ? interns.map(intern => `<option value="${escapeHtml(intern.id)}">${escapeHtml(intern.name)}</option>`).join('') : '<option value="">No student records</option>';
-      document.getElementById('portfolioSelect').innerHTML = options;
-      document.getElementById('idcardSelect').innerHTML = options;
-      document.getElementById('evaluatorSelect').innerHTML = options;
-      document.getElementById('evaluatorSelect').disabled = interns.length === 0;
-    }
-
-    function selectIntern(id) {
-      const intern = interns.find(item => item.id === id) || interns[0];
-      if (!intern) {
-        selectedInternId = null;
-        ['portfolioName', 'portfolioRole', 'portfolioCollege', 'portfolioScore', 'portfolioGrade', 'portfolioProject', 'portfolioDescription', 'idcardName', 'idcardId', 'idcardRole', 'idcardDomain', 'idcardStatus', 'portfolioQrLabel'].forEach(elementId => { document.getElementById(elementId).textContent = ''; });
-        document.getElementById('portfolioSkills').replaceChildren();
-        document.getElementById('portfolioPhoto').removeAttribute('src');
-        document.getElementById('idcardPhoto').removeAttribute('src');
-        document.getElementById('portfolioQr').replaceChildren();
-        document.getElementById('idcardQr').replaceChildren();
-        const portfolioGithub = document.getElementById('portfolioGithub');
-        if (portfolioGithub) portfolioGithub.classList.add('hidden');
-        document.getElementById('evaluationInternName').textContent = 'No intern selected';
-        document.getElementById('evaluationInternId').textContent = '';
-        document.getElementById('evaluatorMentorName').value = '';
-        document.getElementById('evaluatorMentorId').value = '';
-        document.getElementById('evaluatorReview').value = '';
-        document.getElementById('evaluatorEvaluation').value = '';
-        rubricCategories.forEach(({ inputId }) => { document.getElementById(inputId).value = ''; });
-        calculateScore();
-        return;
-      }
-      selectedInternId = intern.id;
-      document.getElementById('portfolioSelect').value = intern.id;
-      document.getElementById('idcardSelect').value = intern.id;
-      document.getElementById('evaluatorSelect').value = intern.id;
-      document.getElementById('evaluationInternName').textContent = intern.name;
-      document.getElementById('evaluationInternId').textContent = intern.id;
-      document.getElementById('evaluatorMentorName').value = intern.mentorName || '';
-      document.getElementById('evaluatorMentorId').value = intern.mentorId || '';
-      document.getElementById('evaluatorReview').value = intern.mentorReview || '';
-      document.getElementById('evaluatorEvaluation').value = intern.evaluation || '';
-      rubricCategories.forEach(({ key, inputId }) => {
-        document.getElementById(inputId).value = intern.marks[key];
-      });
-      document.getElementById('evaluationSaveStatus').textContent = '';
-      calculateScore();
-      const hasPhoto = isSafePhotoUrl(intern.photo);
-      document.getElementById('portfolioPhoto').classList.toggle('hidden', !hasPhoto);
-      if (hasPhoto) document.getElementById('portfolioPhoto').src = intern.photo;
-      else document.getElementById('portfolioPhoto').removeAttribute('src');
-      document.getElementById('portfolioPhoto').alt = `${intern.name} portrait`;
-      document.getElementById('portfolioName').textContent = intern.name;
-      document.getElementById('portfolioRole').textContent = `${intern.role} · ${intern.id}`;
-      document.getElementById('portfolioCollege').textContent = `${intern.college} · ${intern.domain}`;
-      document.getElementById('portfolioScore').textContent = intern.score.toFixed(1);
-      document.getElementById('portfolioGrade').textContent = `Grade ${intern.grade} (${gradeDescription(intern.grade)})`;
-      document.getElementById('portfolioProject').textContent = intern.project;
-      document.getElementById('portfolioDescription').textContent = intern.description;
-      document.getElementById('portfolioSkills').innerHTML = intern.skills.map(skill => `<span class="rounded-md bg-[#ede9fe] px-2.5 py-1.5 text-[10px] font-semibold text-moss">${escapeHtml(skill)}</span>`).join('');
-      const portfolioGithub = document.getElementById('portfolioGithub');
-      if (portfolioGithub) {
-        if (intern.github) {
-          const cleanGithub = intern.github.startsWith('http://') || intern.github.startsWith('https://')
-            ? intern.github
-            : `https://github.com/${intern.github.replace(/^@/, '')}`;
-          portfolioGithub.href = cleanGithub;
-          portfolioGithub.classList.remove('hidden');
-        } else {
-          portfolioGithub.classList.add('hidden');
-        }
-      }
-      document.getElementById('idcardPhoto').classList.toggle('hidden', !hasPhoto);
-      if (hasPhoto) document.getElementById('idcardPhoto').src = intern.photo;
-      else document.getElementById('idcardPhoto').removeAttribute('src');
-      document.getElementById('idcardPhoto').alt = `${intern.name} portrait`;
-      document.getElementById('idcardName').textContent = intern.name;
-      document.getElementById('idcardId').textContent = intern.id;
-      document.getElementById('idcardRole').textContent = intern.role;
-      document.getElementById('idcardDomain').textContent = intern.domain;
-      document.getElementById('idcardStatus').textContent = intern.status;
-      renderQRCodes(intern);
-      if (window.lucide) lucide.createIcons();
-    }
-
-    function gradeDescription(grade) {
-      return ({ 'A+': 'Outstanding', A: 'Excellent', B: 'Very Good', C: 'Good', D: 'Satisfactory', E: 'Needs Improvement' })[grade] || '';
-    }
-
-    function calculateScore() {
-      const marks = readMarkValues(key => document.getElementById(rubricCategories.find(category => category.key === key).inputId).value);
-      const invalid = !marks;
-      document.getElementById('scoreError').classList.toggle('hidden', !invalid);
-      document.getElementById('res_score').classList.toggle('text-rose-700', invalid);
-      if (invalid) {
-        document.getElementById('res_score').textContent = '--';
-        document.getElementById('res_grade').textContent = 'Check score inputs';
-        return;
-      }
-      const score = weightedScore(marks);
-      const grade = gradeForScore(score);
-      document.getElementById('res_score').textContent = score.toFixed(1);
-      document.getElementById('res_grade').textContent = `Grade ${grade} (${gradeDescription(grade)})`;
-    }
-
-    async function saveEvaluation() {
-      const intern = interns.find(item => item.id === selectedInternId);
-      if (!intern) {
-        document.getElementById('evaluationSaveStatus').textContent = 'Select an intern before saving.';
-        return;
-      }
-      const marks = readMarkValues(key => document.getElementById(rubricCategories.find(category => category.key === key).inputId).value);
-      if (!marks) {
-        document.getElementById('evaluationSaveStatus').textContent = 'Enter a mark from 0 to 100 for every rubric category.';
-        return;
-      }
-      const updatedIntern = {
-        ...intern,
-        marks,
-        score: weightedScore(marks),
-        grade: gradeForScore(weightedScore(marks)),
-        mentorName: document.getElementById('evaluatorMentorName').value.trim(),
-        mentorId: document.getElementById('evaluatorMentorId').value.trim(),
-        mentorReview: document.getElementById('evaluatorReview').value.trim(),
-        evaluation: document.getElementById('evaluatorEvaluation').value.trim()
-      };
-      const updatedInterns = interns.map(item => item.id === intern.id ? updatedIntern : item);
-      if (!await persistInterns(updatedInterns)) {
-        document.getElementById('evaluationSaveStatus').textContent = 'Unable to save this evaluation to the permanent dataset.';
-        return;
-      }
-      interns = updatedInterns;
-      renderExecutiveOverview();
-      initCharts();
-      const query = document.getElementById('studentSearch').value.trim().toLowerCase();
-      renderInterns(interns.filter(item => [item.name, item.id, item.college, item.domain, item.role, item.status, item.mentorName, item.mentorId].some(value => value.toLowerCase().includes(query))));
-      selectIntern(updatedIntern.id);
-      document.getElementById('evaluationSaveStatus').textContent = 'Evaluation saved for this intern.';
-    }
-
-    function renderExecutiveOverview() {
-      const total = interns.length;
-      const active = interns.filter(intern => intern.status === 'ACTIVE').length;
-      const certified = interns.filter(intern => Number(intern.score) >= 75).length;
-      const avgPerformance = total ? interns.reduce((sum, intern) => sum + Number(intern.score || 0), 0) / total : 0;
-      const avgAttendance = total ? interns.reduce((sum, intern) => sum + ((Number(intern.days || 0) / Math.max(Number(intern.total || 1), 1)) * 100), 0) / total : 0;
-      const avgPerformanceGrade = gradeForScore(avgPerformance);
-      const pendingReviews = interns.filter(intern => !intern.mentorReview.trim()).length;
-      const activeMentors = new Set(interns.filter(intern => intern.mentorName || intern.mentorId).map(intern => intern.mentorId || intern.mentorName.toLowerCase())).size;
-
-      document.getElementById('metricTotalInterns').textContent = total;
-      document.getElementById('metricTotalMeta').textContent = total === 1 ? 'Single record loaded' : `${total} records loaded`;
-      document.getElementById('metricActiveInterns').textContent = active;
-      document.getElementById('metricActiveMeta').textContent = active === 1 ? 'Intern in sprint' : 'In technical sprints';
-      document.getElementById('metricCertifiedInterns').textContent = certified;
-      document.getElementById('metricCertifiedMeta').textContent = `${certified} verified`;
-      document.getElementById('metricProjects').textContent = total;
-      document.getElementById('metricProjectsMeta').textContent = total === 1 ? 'Milestone tracked' : 'Milestones tracked';
-      document.getElementById('metricAvgPerformance').textContent = avgPerformance.toFixed(1);
-      document.getElementById('metricAvgPerformanceMeta').textContent = `Grade ${avgPerformanceGrade}`;
-      document.getElementById('metricAvgAttendance').textContent = `${avgAttendance.toFixed(1)}%`;
-      document.getElementById('metricAvgAttendanceMeta').textContent = 'Approved workdays';
-      document.getElementById('metricActiveMentors').textContent = activeMentors;
-      document.getElementById('metricActiveMentorsMeta').textContent = activeMentors ? 'Dedicated guidance' : 'No mentor data';
-      document.getElementById('metricPendingReviews').textContent = pendingReviews;
-      document.getElementById('metricPendingReviewsMeta').textContent = pendingReviews ? 'Tasks to score' : 'No pending tasks';
-    }
-
-    function initCharts() {
-      if (!window.Chart) return;
-      Chart.defaults.font.family = "'DM Sans', sans-serif";
-      Chart.defaults.color = '#7c749b';
-
-      if (dashboardDomainChart) dashboardDomainChart.destroy();
-      if (dashboardGradeChart) dashboardGradeChart.destroy();
-
-      const domainCounts = {};
-      interns.forEach(intern => {
-        const label = intern.domain || 'Unassigned';
-        domainCounts[label] = (domainCounts[label] || 0) + 1;
-      });
-      const domainLabels = Object.keys(domainCounts);
-      const domainData = Object.values(domainCounts);
-      const domainColors = ['#7c3aed', '#8b5cf6', '#a78bfa', '#c084fc', '#9333ea', '#6366f1', '#c4b5fd', '#d8b4fe'];
-
-      const gradeCounts = { 'A+': 0, A: 0, B: 0, C: 0, D: 0, E: 0 };
-      interns.forEach(intern => {
-        const grade = intern.grade || gradeForScore(Number(intern.score || 0));
-        if (gradeCounts[grade] !== undefined) gradeCounts[grade] += 1;
-      });
-      const gradeLabels = ['A+ Outstanding', 'A Excellent', 'B Very good', 'C Good', 'D Satisfactory', 'E Needs improvement'];
-      const gradeData = ['A+', 'A', 'B', 'C', 'D', 'E'].map(key => gradeCounts[key] || 0);
-
-      dashboardDomainChart = new Chart(document.getElementById('domainChart'), {
-        type: 'bar',
-        data: { labels: domainLabels.length ? domainLabels : ['No data'], datasets: [{ data: domainData.length ? domainData : [0], backgroundColor: domainColors, borderRadius: 4, maxBarThickness: 32 }] },
-        options: { maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { displayColors: false } }, scales: { x: { grid: { display: false }, border: { display: false } }, y: { beginAtZero: true, grid: { color: '#f3e8ff' }, border: { display: false }, ticks: { stepSize: Math.max(1, Math.ceil(Math.max(...domainData, 1) / 5)) } } } }
-      });
-      dashboardGradeChart = new Chart(document.getElementById('gradeChart'), {
-        type: 'doughnut',
-        data: { labels: gradeLabels, datasets: [{ data: gradeData, backgroundColor: ['#7c3aed', '#8b5cf6', '#a78bfa', '#c084fc', '#d8b4fe', '#cbd5e1'], borderWidth: 3, borderColor: '#fff', hoverOffset: 4 }] },
-        options: { maintainAspectRatio: false, cutout: '68%', plugins: { legend: { position: 'right', labels: { usePointStyle: true, pointStyle: 'circle', boxWidth: 7, padding: 16, font: { size: 10 } } } } }
-      });
-    }
-
-    window.addEventListener('hashchange', openProfileFromHash);
-
     window.addEventListener('DOMContentLoaded', async () => {
-      try {
-        await loadPersistentDataset();
-      } catch (error) {
-        console.warn('Dataset auto-load notice:', error);
-      }
-      const isStaticHost = window.location.hostname.includes('github.io') || window.location.protocol === 'file:';
-      if (isStaticHost) {
-        const signOutForm = document.querySelector('form[action="/logout"]');
-        if (signOutForm) {
-          signOutForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            if (window.confirm('Reset all student records to original cohort data?')) {
-              localStorage.removeItem('psm-internhub-interns');
-              window.location.reload();
-            }
-          });
-          const btn = signOutForm.querySelector('button');
-          if (btn) btn.textContent = 'Reset cohort';
-        }
-      }
-      document.getElementById('internRows').addEventListener('click', event => {
-        const button = event.target.closest('button[data-action]');
-        if (!button) return;
-        if (button.dataset.action === 'qr') {
-          openStudentQrDialog(button.dataset.internId);
-          return;
-        }
-        if (button.dataset.action === 'delete') {
-          deleteIntern(button.dataset.internId);
-          return;
-        }
-        selectIntern(button.dataset.internId);
-        if (button.dataset.action === 'edit') openEditIntern();
-        if (button.dataset.action === 'view') switchTab('public-portfolio');
-      });
-      fetchNetworkInfo();
-      renderInterns(interns);
-      setSelectOptions();
-      renderExecutiveOverview();
-      selectIntern(selectedInternId);
-      openProfileFromHash();
-      calculateScore();
-      initCharts();
-      if (window.lucide) lucide.createIcons();
+      await loadDataset();
     });
   </script>
 </body>

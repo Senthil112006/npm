@@ -7,7 +7,8 @@
     "start": "node server.js",
     "dev": "node server.js",
     "db:sync": "node scripts/sync-supabase.js",
-    "set-password": "node scripts/set-admin-password.js"
+    "set-password": "node scripts/set-admin-password.js",
+    "test": "node --test tests/*.test.js"
   },
   "type": "commonjs",
   "private": true,

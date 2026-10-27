@@ -1,73 +1,162 @@
 # PSM InternHub
 
-## Start the local admin app
+Production-ready Internship Management, Weighted Performance Evaluation, Printable ID Pass, and Public QR Verification Web Application.
 
-1. Install Node.js 18 or later.
-2. Install dependencies with `npm install`.
-3. Use the local `.env` file in this folder. If it is missing, create it from `.env.example` and set `ADMIN_USERNAME`, `ADMIN_PASSWORD_HASH`, and `SESSION_SECRET`.
-4. Start the app with `npm start`, then open `http://127.0.0.1:3000`.
+---
 
-Always open the app through the server. Opening `index.html` directly as a file bypasses the server-side login.
+## 1. Quick Start (Local Development)
 
-The administrator password is stored as a salted scrypt hash, not as source code. Generate a hash with:
+### Prerequisites
+- Node.js 18 or later (`node -v`)
+- npm 9 or later (`npm -v`)
 
-```js
-const crypto = require('node:crypto');
-const salt = crypto.randomBytes(16).toString('hex');
-const hash = crypto.scryptSync('your-password', salt, 64).toString('hex');
-console.log(`${salt}:${hash}`);
-```
+### Steps
 
-Set `ADMIN_PASSWORD_HASH` to the generated `salt:hash` value. Use a unique password for any real deployment.
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-Intern records are saved in the server-side `data/interns.json` dataset and shared by admin browsers using the same server. The browser keeps a local cache and automatically seeds the server dataset from existing browser records the first time the server dataset is initialized. Keep the data directory on persistent storage and include it in your backups.
+2. **Configure environment:**
+   Copy `.env.example` to `.env` if not already present:
+   ```bash
+   cp .env.example .env
+   ```
 
-Intern records support manually editable unique IDs, mentor names and IDs, mentor review and evaluation notes, and saved marks for each weighted grading category. The overall score and grade are calculated from the saved marks.
+3. **Set administrator password:**
+   Run the secure password setup utility:
+   ```bash
+   npm run set-password
+   ```
+   Follow the interactive prompt to enter your new administrator password. The script automatically derives a salted scrypt hash (`salt:hash`), generates a 64-character `SESSION_SECRET`, and updates your local `.env`.
 
-## Supabase Database Integration
+4. **Start the application:**
+   ```bash
+   npm run dev
+   # or
+   npm start
+   ```
+   Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-InternHub supports **Supabase PostgreSQL** as the cloud database for persistent multi-device storage and verified public profile lookups.
+5. **Run automated test suite:**
+   ```bash
+   npm test
+   ```
 
-### 1. Configure Credentials
-In your local `.env` file (and in your cloud host environment variables):
+---
+
+## 2. Supabase PostgreSQL Setup
+
+PSM InternHub supports dual-mode storage: Supabase PostgreSQL as the primary database with a resilient local JSON file fallback (`data/interns.json`).
+
+### Step 1: Create Supabase Project
+1. Log in to [Supabase Dashboard](https://supabase.com/dashboard) and create a new project.
+2. Navigate to **Project Settings** -> **API** to retrieve:
+   - **Project URL** (`https://<project-ref>.supabase.co`)
+   - **anon / public key** or **service_role key**
+
+### Step 2: Run Database Schema
+1. In the Supabase Dashboard, open **SQL Editor** -> **New query**.
+2. Copy the entire content of [`supabase-schema.sql`](file:///c:/Users/MRasu/Downloads/psm/supabase-schema.sql) and click **Run**.
+3. This creates:
+   - `public.interns` table with constraints for scores (`0-100`), days, and statuses
+   - Performance indexes on `status`, `domain`, `score`, and `created_at`
+   - Automated trigger for updating `updated_at`
+   - Row-Level Security (RLS) policies allowing public read access for verification and write access for authenticated server operations
+
+### Step 3: Configure Environment Variables
+In your `.env` file (and production host):
 ```env
 SUPABASE_URL=https://<your-project-id>.supabase.co
-SUPABASE_KEY=<your-server-side-supabase-key>
+SUPABASE_KEY=<your-supabase-key>
 ```
 
-### 2. Create Database Table
-1. Open your project in the [Supabase Dashboard](https://supabase.com/dashboard).
-2. Go to **SQL Editor** -> **New query**.
-3. Copy and run the SQL from `supabase-schema.sql` in this repository.
-
-### 3. Sync Existing Student Cohort to Supabase
-Run the sync command in terminal to migrate all student records:
+### Step 4: Synchronize Cohort Records
+To upload and verify existing local student records into Supabase:
 ```bash
 npm run db:sync
 ```
-When running, the server automatically uses Supabase for reading, updating, and public profile lookups, with local file caching as an offline fallback.
 
-## Intern-specific profile QR codes
+---
 
-The Portfolio and ID card QR codes are generated as signed links to one intern's standalone public profile. The QR does not open the admin dashboard or provide access to the intern directory. Anyone with a profile link can view that profile, so share it only as appropriate. Older imported QR images are ignored; the app generates a specific profile QR instead.
+## 3. Application Architecture & Screens
 
-For phone scanning or public access, deploy the app at a public HTTPS address. The default local server address only works on this computer.
+The application reproduces the 5 Google Stitch reference interfaces:
 
-## Deploy to Render
+| Stitch Reference | Module / Screen | Route | Key Capabilities |
+| :--- | :--- | :--- | :--- |
+| **Reference 1** | Administrator Login | `GET /login` | Secure scrypt authentication, rate limiting (5 req / 15 min), password visibility toggle, accessible feedback. |
+| **Reference 2** | Executive Overview | `GET /#dashboard` | Live metrics (Total, Active, Certified, Projects, Avg Score, Attendance, Mentors), Chart.js visualizations, Top Performers leaderboard. |
+| **Reference 3** | Intern Directory (CRUD) | `GET /#students` | Full intern listing, search, domain filter, status filter, sorting, live modal CRUD (`POST`, `PATCH`, `DELETE`), quick attendance dialog. |
+| **Reference 4** | Weighted Grading Rubric | `GET /#evaluator` | 6 category rubric (Technical, Quality, Problem Solving, Task Completion, Communication, Teamwork), weighted composite calculation, letter grade derivation, mentor review saving. |
+| **Reference 5** | Verified Profile & ID Pass | `GET /profile/:id` & `GET /#idcard` | Public verification profile with live QR code, attendance progress, rubric breakdown, print credential view, and printable official badge pass. |
 
-1. Push the project to a private GitHub repository. Do not commit `.env`; it is excluded by `.gitignore`.
-2. In Render, create a **Blueprint** from that repository. Render reads `render.yaml` and creates the web service.
-3. In the Render service environment settings, set `ADMIN_USERNAME` and `ADMIN_PASSWORD_HASH`. Generate a new, unique administrator password hash using the script above; do not use a password that has been shared in chat. Render generates `SESSION_SECRET`.
-4. Deploy the service. The Blueprint provisions persistent storage at `/var/data`, where the intern dataset is stored. Use the HTTPS `onrender.com` URL shown in the Render dashboard to access the login page and generate intern QR links.
+---
 
-The admin site remains protected by the login; public QR links reveal only their signed intern profile. Each profile link is shareable by anyone who has it. Render persistent disks require a paid service and support one service instance; confirm the disk and service pricing in your Render account before deploying. The session store is in memory, so admin sessions are cleared on service restarts.
+## 4. API Endpoints
 
+### Public APIs
+- `GET /health` &mdash; Returns `{"status":"ok"}`.
+- `GET /login` &mdash; Standalone administrator login screen.
+- `POST /login` &mdash; Validates credentials, regenerates session cookie.
+- `GET /profile/:id` &mdash; Standalone public intern verification profile.
+- `GET /api/public/interns/:id` &mdash; Public API returning approved non-sensitive intern details and verification state.
+- `GET /api/network-info` &mdash; Local IP and base URL for mobile QR code scanning.
 
-## Important deployment notes
+### Protected Administrator APIs (Requires Session Cookie)
+- `GET /` & `GET /index.html` &mdash; Administrator dashboard.
+- `POST /logout` &mdash; Destroys admin session.
+- `GET /api/auth/status` &mdash; Checks session authentication status.
+- `GET /api/interns` &mdash; Returns all intern records.
+- `POST /api/interns` &mdash; Creates a new validated intern (rejects duplicate IDs).
+- `GET /api/interns/:id` &mdash; Returns single intern record.
+- `PATCH /api/interns/:id` &mdash; Updates existing intern fields and recalculates score.
+- `DELETE /api/interns/:id` &mdash; Deletes intern record from database and local storage.
+- `PUT /api/interns` &mdash; Batch upsert for backup restoration and cohort synchronization.
+- `POST /api/profile-link` &mdash; Generates signed cryptographic HMAC token link for QR verification.
 
-- This is a **Node.js/Express application**, not a static GitHub Pages application. Deploy it as a Render Web Service using the included `render.yaml` Blueprint, or another Node.js host.
-- Do not deploy `index.html` by itself to GitHub Pages: the server-side login, API routes, and persistent data storage will not run there.
-- Keep the GitHub repository private if the JSON data files contain real student information. Do not commit `.env`, passwords, session secrets, or database service-role keys.
-- The server no longer serves the `data/` directory publicly and no longer exposes a public endpoint that returns the entire intern directory. Individual public profile links are handled by the signed profile endpoint.
-- In Render, set a unique `ADMIN_USERNAME` and `ADMIN_PASSWORD_HASH`. The password hash must be `salt:hash`, with a 32-character hexadecimal salt and a 128-character hexadecimal scrypt hash. Keep the password itself private.
-- If using Supabase, use a server-side secret key only in the Render environment. Never place a service-role/secret key in HTML or browser JavaScript. Configure database access policies before enabling cloud database access.
+---
+
+## 5. Deployment on Render
+
+This repository includes a production-ready [`render.yaml`](file:///c:/Users/MRasu/Downloads/psm/render.yaml) blueprint.
+
+### Steps to Deploy:
+1. Push this project to your GitHub repository:
+   ```bash
+   git add .
+   git commit -m "Production ready PSM InternHub"
+   git push origin main
+   ```
+2. Log in to [Render](https://dashboard.render.com).
+3. Click **New +** -> **Blueprint**.
+4. Connect your GitHub repository. Render automatically reads `render.yaml`.
+5. In the Render environment configuration, fill in your production values:
+   - `ADMIN_USERNAME`: e.g. `admin@psm`
+   - `ADMIN_PASSWORD_HASH`: Output from `npm run set-password`
+   - `SUPABASE_URL`: Your Supabase Project URL
+   - `SUPABASE_KEY`: Your Supabase Server API Key
+   - `SESSION_SECRET`: Auto-generated by Render
+6. Click **Apply**.
+7. Render provisions the web service, attaches the `/var/data` disk, runs `npm install`, and starts `server.js` with active health monitoring on `/health`.
+
+---
+
+## 6. Security & Hardening Features
+
+- **Password Storage**: Salted scrypt key derivation (`crypto.scryptSync`, 16-byte random salt, 64-byte key).
+- **Constant-Time Verification**: `crypto.timingSafeEqual` with buffer length checking prevents timing side-channels.
+- **Session Protection**: `express-session` with `HttpOnly`, `SameSite=Lax`, 4-hour expiration, and session ID regeneration upon login.
+- **Rate Limiting**: `express-rate-limit` enforces a strict 5-request limit per 15-minute window on `/login`.
+- **Security Headers**: Standard defense-in-depth headers:
+  - `X-Frame-Options: DENY`
+  - `X-Content-Type-Options: nosniff`
+  - `Cache-Control: no-store` on authenticated endpoints
+  - `Referrer-Policy: strict-origin-when-cross-origin`
+- **Public Data Isolation**: Dedicated public profile serializer guarantees internal administrative notes, passwords, and sensitive system state are never transmitted to public visitors.
+
+---
+
+## 7. License
+
+PSM InternHub &copy; 2026 Problem Solving Minds. All rights reserved.

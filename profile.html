@@ -336,7 +336,10 @@
 
       if (!isStaticHost && identifier) {
         try {
-          const response = await fetch(`/api/public-profile/${encodeURIComponent(identifier)}`, { cache: 'no-store' });
+          let response = await fetch(`/api/public/interns/${encodeURIComponent(identifier)}`, { cache: 'no-store' });
+          if (!response.ok) {
+            response = await fetch(`/api/public-profile/${encodeURIComponent(identifier)}`, { cache: 'no-store' });
+          }
           if (response.ok) {
             profile = await response.json();
           }

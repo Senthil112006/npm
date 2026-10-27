@@ -12,15 +12,16 @@ let isConfigured = false;
 
 function normalizeSupabaseUrl(url) {
   if (!url) return '';
-  const match = url.match(/supabase\.com\/dashboard\/project\/([a-z0-9]+)/i);
+  // Support dashboard project URLs: https://supabase.com/dashboard/project/<project-id>
+  const match = url.match(/supabase\.com\/dashboard\/project\/([a-z0-9_-]+)/i);
   if (match) {
     return `https://${match[1]}.supabase.co`;
   }
-  return url;
+  return url.replace(/\/+$/, '');
 }
 
 function isValidUrl(urlString) {
-  if (!urlString || urlString.includes('your-project-ref')) return false;
+  if (!urlString || urlString.includes('your-project-ref') || urlString.includes('<your-project-id>')) return false;
   try {
     const parsed = new URL(urlString);
     return ['http:', 'https:'].includes(parsed.protocol);
@@ -31,7 +32,7 @@ function isValidUrl(urlString) {
 
 const cleanedUrl = normalizeSupabaseUrl(rawUrl);
 
-if (isValidUrl(cleanedUrl) && rawKey) {
+if (isValidUrl(cleanedUrl) && rawKey && !rawKey.includes('<your-supabase-anon')) {
   try {
     supabaseInstance = createClient(cleanedUrl, rawKey, {
       auth: {
@@ -186,6 +187,67 @@ async function fetchSingleInternFromSupabase(identifier) {
 }
 
 /**
+ * Inserts a single intern record into Supabase.
+ */
+async function insertSingleInternInSupabase(intern) {
+  if (!isSupabaseConfigured() || !intern) return null;
+
+  const row = mapInternToRow(intern);
+  const { data, error } = await supabaseInstance
+    .from('interns')
+    .insert([row])
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(`Supabase insert error: ${error.message} (code: ${error.code})`);
+  }
+
+  return mapRowToIntern(data);
+}
+
+/**
+ * Updates a single intern record in Supabase by ID.
+ */
+async function updateSingleInternInSupabase(id, intern) {
+  if (!isSupabaseConfigured() || !id || !intern) return null;
+
+  const row = mapInternToRow(intern);
+  delete row.id; // Avoid mutating primary key
+
+  const { data, error } = await supabaseInstance
+    .from('interns')
+    .update(row)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(`Supabase update error: ${error.message} (code: ${error.code})`);
+  }
+
+  return mapRowToIntern(data);
+}
+
+/**
+ * Deletes a single intern from Supabase by ID.
+ */
+async function deleteSingleInternFromSupabase(id) {
+  if (!isSupabaseConfigured() || !id) return false;
+
+  const { error } = await supabaseInstance
+    .from('interns')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    throw new Error(`Supabase delete error: ${error.message} (code: ${error.code})`);
+  }
+
+  return true;
+}
+
+/**
  * Upserts a list of intern records into Supabase and deletes removed records.
  */
 async function syncInternsToSupabase(records) {
@@ -208,7 +270,6 @@ async function syncInternsToSupabase(records) {
   const currentIds = records.map(r => r.id);
   if (currentIds.length > 0) {
     try {
-      // Query existing IDs to see which need deletion
       const { data: existingRows } = await supabaseInstance
         .from('interns')
         .select('id');
@@ -242,8 +303,13 @@ async function syncInternsToSupabase(records) {
 module.exports = {
   isSupabaseConfigured,
   getSupabaseClient,
+  normalizeSupabaseUrl,
+  isValidUrl,
   fetchAllInternsFromSupabase,
   fetchSingleInternFromSupabase,
+  insertSingleInternInSupabase,
+  updateSingleInternInSupabase,
+  deleteSingleInternFromSupabase,
   syncInternsToSupabase,
   mapRowToIntern,
   mapInternToRow

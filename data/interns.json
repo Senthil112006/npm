@@ -2,6 +2,40 @@
   "version": 1,
   "students": [
     {
+      "id": "PSM-INT-2026-0005",
+      "name": "mano",
+      "college": "TAKSHASHILA UNIVERSITY",
+      "domain": "DATA SCIENCE",
+      "role": "DATA SCIENCE INTERN",
+      "days": 0,
+      "total": 90,
+      "score": 0,
+      "grade": "E",
+      "status": "ACTIVE",
+      "mentorName": "LOHAN",
+      "mentorId": "PSME007",
+      "mentorReview": "",
+      "evaluation": "",
+      "project": "",
+      "description": "",
+      "github": "https://github.com/Senthil112006",
+      "photo": "",
+      "qrImage": "",
+      "skills": [
+        "PYTHON",
+        "JAVA",
+        "C++"
+      ],
+      "marks": {
+        "technical": 0,
+        "projectQuality": 0,
+        "problemSolving": 0,
+        "taskCompletion": 0,
+        "communication": 0,
+        "teamwork": 0
+      }
+    },
+    {
       "id": "PSMI011",
       "name": "M Senthilnathan",
       "college": "TAKSHASHILA UNIVERSITY",
