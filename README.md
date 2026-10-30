@@ -183,3 +183,5 @@ This repository includes a production-ready [`render.yaml`](file:///c:/Users/MRa
 ## 7. License
 
 PSM InternHub &copy; 2026 Problem Solving Minds. All rights reserved.
+#   P S M - I n t e r n H u b  
+ 
