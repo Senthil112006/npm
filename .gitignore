@@ -1,6 +1,10 @@
 node_modules/
 .env
-data/*.tmp*
-*.zip
+.env.local
+.env.production
+.vercel/
 .DS_Store
 Thumbs.db
+npm-debug.log*
+data/*.tmp*
+*.zip

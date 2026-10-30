@@ -79,8 +79,31 @@ npm run db:sync
 
 ---
 
-## 3. Application Architecture & Screens
+## 3. Project Structure & Architecture
 
+### Repository Structure
+```text
+PSM-InternHub/
+│
+├── assets/                 # Shared visual assets, icons, badges, and stylesheets
+├── data/                   # Local JSON data & seed files (resilient fallback)
+├── scripts/                # Database synchronization & admin password setup utilities
+├── tests/                  # Automated integration and unit test suite
+├── index.html              # Administrator management dashboard (Stitch Ref 2, 3, 4, 5)
+├── login.html              # Administrator authentication screen (Stitch Ref 1)
+├── profile.html            # Public QR-verified student profile (Stitch Ref 5)
+├── server.js               # Production Express backend & secure API
+├── supabaseClient.js       # Resilient Supabase PostgreSQL client
+├── supabase-schema.sql     # Database schema, indexes, triggers & RLS policies
+├── render.yaml             # Render infrastructure-as-code blueprint
+├── package.json            # Application dependencies and execution scripts
+├── package-lock.json       # Exact dependency lockfile
+├── .env.example            # Environment variable template
+├── .gitignore              # Git ignore rules
+└── README.md               # Repository documentation
+```
+
+### Screens & Modules
 The application reproduces the 5 Google Stitch reference interfaces:
 
 | Stitch Reference | Module / Screen | Route | Key Capabilities |
